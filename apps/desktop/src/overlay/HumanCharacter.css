@@ -1,0 +1,63 @@
+.human-wrapper {
+  transform-origin: bottom center;
+  display: inline-block;
+}
+
+.human-wrapper svg {
+  display: block;
+}
+
+.arm-left { transform-origin: 50px 50px; }
+.arm-right { transform-origin: 50px 50px; }
+.leg-left { transform-origin: 50px 85px; }
+.leg-right { transform-origin: 50px 85px; }
+
+/* Walk cycle */
+@keyframes walk-leg-left {
+  0%, 100% { transform: rotate(-25deg); }
+  50% { transform: rotate(25deg); }
+}
+@keyframes walk-leg-right {
+  0%, 100% { transform: rotate(25deg); }
+  50% { transform: rotate(-25deg); }
+}
+@keyframes walk-arm-left {
+  0%, 100% { transform: rotate(25deg); }
+  50% { transform: rotate(-25deg); }
+}
+/* Arm right holds the bottle, it just slightly bobs */
+@keyframes walk-arm-right {
+  0%, 100% { transform: rotate(5deg); }
+  50% { transform: rotate(-5deg); }
+}
+@keyframes body-bob {
+  0%, 50%, 100% { transform: translateY(0); }
+  25%, 75% { transform: translateY(-4px); }
+}
+
+/* Apply walk animations */
+.walk .leg-left { animation: walk-leg-left 0.8s infinite cubic-bezier(0.4, 0, 0.6, 1); }
+.walk .leg-right { animation: walk-leg-right 0.8s infinite cubic-bezier(0.4, 0, 0.6, 1); }
+.walk .arm-left { animation: walk-arm-left 0.8s infinite cubic-bezier(0.4, 0, 0.6, 1); }
+.walk .arm-right { animation: walk-arm-right 0.8s infinite cubic-bezier(0.4, 0, 0.6, 1); }
+.walk svg { animation: body-bob 0.8s infinite linear; }
+
+/* Run cycle (faster) */
+.run .leg-left { animation: walk-leg-left 0.4s infinite cubic-bezier(0.4, 0, 0.6, 1); }
+.run .leg-right { animation: walk-leg-right 0.4s infinite cubic-bezier(0.4, 0, 0.6, 1); }
+.run .arm-left { animation: walk-arm-left 0.4s infinite cubic-bezier(0.4, 0, 0.6, 1); }
+.run .arm-right { animation: walk-arm-right 0.4s infinite cubic-bezier(0.4, 0, 0.6, 1); }
+.run svg { animation: body-bob 0.4s infinite linear; }
+
+/* Idle animation */
+@keyframes idle-bob {
+  0%, 100% { transform: translateY(0) scaleY(1); }
+  50% { transform: translateY(2px) scaleY(0.98); }
+}
+
+.idle .leg-left, .idle .leg-right, .idle .arm-left, .idle .arm-right {
+  transform: rotate(0deg);
+}
+.idle svg {
+  animation: idle-bob 2s infinite ease-in-out;
+}

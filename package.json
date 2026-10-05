@@ -1,0 +1,29 @@
+{
+  "name": "water-buddy",
+  "version": "1.0.0",
+  "description": "Water-Buddy",
+  "main": "index.js",
+  "scripts": {
+    "start": "concurrently \"npm run dev --workspace=apps/server\" \"npm run start --workspace=apps/desktop\"",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/srikode-dev/Water-Buddy.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/srikode-dev/Water-Buddy/issues"
+  },
+  "homepage": "https://github.com/srikode-dev/Water-Buddy#readme",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "devDependencies": {
+    "concurrently": "^10.0.5"
+  }
+}
