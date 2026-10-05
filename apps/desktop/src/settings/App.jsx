@@ -3,18 +3,22 @@ import './index.css';
 
 function App() {
   const [settings, setSettings] = useState({
+    name: '',
+    weight: 70,
+    height: 170,
+    dailyGoal: 2450,
     intervalMin: 45,
     sipMode: 'auto',
-    manualSipMl: 250,
+    manualSipMl: 150,
     launchOnStartup: true
   });
-  const [activeTab, setActiveTab] = useState('schedule');
+  const [activeTab, setActiveTab] = useState('profile');
   const [logs, setLogs] = useState([]);
 
   useEffect(() => {
     if (window.electronAPI) {
       window.electronAPI.getSettings().then(s => {
-        if (s) setSettings(s);
+        if (s) setSettings(prev => ({ ...prev, ...s }));
       });
       window.electronAPI.getLogs().then(l => {
         if (l) setLogs(l);
@@ -26,6 +30,10 @@ function App() {
   }, []);
 
   const handleSave = async (newSettings) => {
+    // Auto calculate daily goal based on weight (weight in kg * 35ml)
+    if (newSettings.weight) {
+      newSettings.dailyGoal = Math.round(newSettings.weight * 35);
+    }
     setSettings(newSettings);
     if (window.electronAPI) {
       await window.electronAPI.saveSettings(newSettings);
@@ -40,18 +48,59 @@ function App() {
     <div className="settings-layout">
       <aside className="sidebar">
         <div className="brand">
-          <span className="logo">💧</span>
+          <img src="../public/icon.png" alt="Logo" className="logo-img" style={{width: 32, height: 32, borderRadius: 8}} />
           <h2>Water Buddy</h2>
         </div>
         <nav>
+          <button className={activeTab === 'profile' ? 'active' : ''} onClick={() => setActiveTab('profile')}>👤 Profile</button>
           <button className={activeTab === 'schedule' ? 'active' : ''} onClick={() => setActiveTab('schedule')}>🕒 Schedule</button>
-          <button className={activeTab === 'goal' ? 'active' : ''} onClick={() => setActiveTab('goal')}>🎯 Goal & Logs</button>
+          <button className={activeTab === 'history' ? 'active' : ''} onClick={() => setActiveTab('history')}>📊 History</button>
           <button className={activeTab === 'general' ? 'active' : ''} onClick={() => setActiveTab('general')}>⚙️ General</button>
-          <button className={activeTab === 'sync' ? 'active' : ''} onClick={() => setActiveTab('sync')}>☁️ Sync & Cloud</button>
+          <button className={activeTab === 'sync' ? 'active' : ''} onClick={() => setActiveTab('sync')}>☁️ Sync</button>
         </nav>
       </aside>
       
       <main className="content">
+        {activeTab === 'profile' && (
+          <div className="tab-pane fade-in">
+            <h3>My Profile</h3>
+            <p className="help-text">We use this to calculate your optimal hydration goals.</p>
+            <div className="card profile-form">
+              <label>
+                <span>Name</span>
+                <input 
+                  type="text" 
+                  value={settings.name || ''} 
+                  placeholder="What should we call you?"
+                  onChange={(e) => handleSave({ ...settings, name: e.target.value })}
+                />
+              </label>
+              <div className="form-row">
+                <label>
+                  <span>Weight (kg)</span>
+                  <input 
+                    type="number" 
+                    value={settings.weight || 70} 
+                    onChange={(e) => handleSave({ ...settings, weight: parseInt(e.target.value) || 0 })}
+                  />
+                </label>
+                <label>
+                  <span>Height (cm)</span>
+                  <input 
+                    type="number" 
+                    value={settings.height || 170} 
+                    onChange={(e) => handleSave({ ...settings, height: parseInt(e.target.value) || 0 })}
+                  />
+                </label>
+              </div>
+              <div className="goal-highlight">
+                <h4>Your Daily Goal: <span>{settings.dailyGoal} ml</span></h4>
+                <p>Based on your weight, you should drink {settings.dailyGoal}ml of water daily.</p>
+              </div>
+            </div>
+          </div>
+        )}
+
         {activeTab === 'schedule' && (
           <div className="tab-pane fade-in">
             <h3>Reminder Schedule</h3>
@@ -66,31 +115,52 @@ function App() {
                   <option value={30}>30 minutes</option>
                   <option value={45}>45 minutes</option>
                   <option value={60}>60 minutes</option>
+                  <option value={90}>90 minutes</option>
                 </select>
               </label>
               <p className="help-text">How often should Buddy remind you to drink water?</p>
             </div>
+            <div className="card">
+              <label>
+                <span>Amount per sip (ml)</span>
+                <select 
+                  value={settings.manualSipMl || 150} 
+                  onChange={(e) => handleSave({ ...settings, manualSipMl: parseInt(e.target.value) })}
+                >
+                  <option value={100}>100 ml (Small Cup)</option>
+                  <option value={150}>150 ml (Regular Cup)</option>
+                  <option value={250}>250 ml (Large Glass)</option>
+                  <option value={500}>500 ml (Bottle)</option>
+                </select>
+              </label>
+            </div>
           </div>
         )}
 
-        {activeTab === 'goal' && (
+        {activeTab === 'history' && (
           <div className="tab-pane fade-in">
             <h3>Today's Progress</h3>
             <div className="progress-card">
-              <div className="progress-circle">
+              <div className="progress-circle" style={{ borderColor: '#f97316', color: '#f97316' }}>
                 <h2>{totalDrankToday} <small>ml</small></h2>
               </div>
+              <p>{totalDrankToday >= settings.dailyGoal ? 'Goal Reached! 🎉' : `${settings.dailyGoal - totalDrankToday} ml left to reach goal`}</p>
             </div>
 
-            <h3>Recent Logs</h3>
+            <h3>Past Records</h3>
             <div className="logs-list">
               {logs.slice().reverse().map((log, i) => (
                 <div key={i} className={`log-item ${log.response}`}>
-                  <span>{new Date(log.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
-                  <span>{log.response === 'yes' ? `Drank ${log.amount} ml` : 'Ignored'}</span>
+                  <div className="log-date">
+                    <strong>{new Date(log.timestamp).toLocaleDateString()}</strong>
+                    <span>{new Date(log.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+                  </div>
+                  <span className="log-action">
+                    {log.response === 'yes' ? <span style={{color: '#f97316'}}>+{log.amount} ml</span> : <span style={{color: '#94a3b8'}}>Skipped</span>}
+                  </span>
                 </div>
               ))}
-              {logs.length === 0 && <p className="empty-state">No logs yet today.</p>}
+              {logs.length === 0 && <p className="empty-state">No records yet.</p>}
             </div>
           </div>
         )}
@@ -116,10 +186,11 @@ function App() {
             <h3>Cloud Sync</h3>
             <div className="card">
               <p>Sign in to sync your water logs and settings across multiple devices.</p>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '20px' }}>
-                <input id="syncEmail" type="email" placeholder="Email" style={{ padding: '10px', borderRadius: '8px', border: '1px solid #cbd5e1' }} />
-                <input id="syncPassword" type="password" placeholder="Password" style={{ padding: '10px', borderRadius: '8px', border: '1px solid #cbd5e1' }} />
+              <div className="sync-form">
+                <input id="syncEmail" type="email" placeholder="Email" />
+                <input id="syncPassword" type="password" placeholder="Password" />
                 <button 
+                  className="btn-primary"
                   onClick={async () => {
                     const email = document.getElementById('syncEmail').value;
                     const password = document.getElementById('syncPassword').value;
@@ -140,7 +211,6 @@ function App() {
                       alert('Network error trying to login.');
                     }
                   }}
-                  style={{ padding: '10px', background: '#2563eb', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}
                 >
                   Login
                 </button>
