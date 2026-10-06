@@ -305,7 +305,7 @@ function App() {
                     const email = document.getElementById('syncEmail').value;
                     const password = document.getElementById('syncPassword').value;
                     try {
-                      const res = await fetch('http://localhost:5000/api/auth/login', {
+                      const res = await fetch('https://water-buddy-r8ur.onrender.com/api/auth/login', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ email, password })
