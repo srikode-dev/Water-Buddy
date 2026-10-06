@@ -9,7 +9,7 @@ export const registerUser = async (req, res) => {
     const { email, password, name } = req.body;
     const existingUser = await User.findOne({ email });
     if (existingUser) return res.status(400).json({ error: 'User already exists' });
-    
+
     const passwordHash = await bcrypt.hash(password, 10);
     const user = new User({ email, passwordHash, name });
     await user.save();
@@ -34,3 +34,6 @@ export const loginUser = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+
+
+
