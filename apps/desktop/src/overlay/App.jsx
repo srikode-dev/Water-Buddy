@@ -45,15 +45,34 @@ function App() {
     }
   }, [isVisible, hasAnswered]);
 
-  const handleResponse = (drank) => {
+  const playBloop = () => {
+    try {
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(400, ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(800, ctx.currentTime + 0.1);
+      gain.gain.setValueAtTime(0.5, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.1);
+      osc.start();
+      osc.stop(ctx.currentTime + 0.1);
+    } catch (e) { /* ignore */ }
+  };
+
+  const handleResponse = (drank, beverageType = 'water', multiplier = 1) => {
     setHasAnswered(true);
     if (drank) {
-      const newConsumed = currentConsumed + sipAmount;
+      playBloop();
+      const amount = Math.round(sipAmount * multiplier);
+      const newConsumed = currentConsumed + amount;
       setCurrentConsumed(newConsumed);
       setFillLevel(Math.min((newConsumed / dailyGoal) * 100, 100));
       
       if (window.electronAPI && window.electronAPI.logWater) {
-        window.electronAPI.logWater({ response: 'yes', amount: sipAmount });
+        window.electronAPI.logWater({ response: 'yes', amount, beverageType, hydrationMultiplier: multiplier });
       }
       // Hide after animation finishes
       setTimeout(() => {
@@ -90,6 +109,12 @@ function App() {
         {/* Progress Ring */}
         <div className="widget-progress">
           <svg width="48" height="48" viewBox="0 0 48 48">
+            <defs>
+              <linearGradient id="progressGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor="#38bdf8" />
+                <stop offset="100%" stopColor="#0284c7" />
+              </linearGradient>
+            </defs>
             <circle 
               className="progress-bg" 
               cx="24" cy="24" r={radius} 
@@ -105,7 +130,29 @@ function App() {
               transform="rotate(-90 24 24)"
             />
           </svg>
-          <div className="progress-icon">💧</div>
+          <div className="progress-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#f8fafc" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              {fillLevel < 33 ? (
+                <>
+                  <circle cx="12" cy="12" r="10" fill="rgba(0,0,0,0.3)" stroke="transparent" />
+                  <path d="M8 9h.01M16 9h.01" strokeWidth="3" />
+                  <path d="M16 16s-1.5-2-4-2-4 2-4 2" />
+                </>
+              ) : fillLevel < 70 ? (
+                <>
+                  <circle cx="12" cy="12" r="10" fill="rgba(255,255,255,0.1)" stroke="transparent" />
+                  <path d="M8 9h.01M16 9h.01" strokeWidth="3" />
+                  <path d="M8 15h8" />
+                </>
+              ) : (
+                <>
+                  <circle cx="12" cy="12" r="10" fill="rgba(56, 189, 248, 0.3)" stroke="transparent" />
+                  <path d="M8 9h.01M16 9h.01" strokeWidth="3" />
+                  <path d="M8 14s1.5 2 4 2 4-2 4-2" />
+                </>
+              )}
+            </svg>
+          </div>
         </div>
 
         {/* Text Content */}
@@ -117,8 +164,14 @@ function App() {
         {/* Actions */}
         {!hasAnswered && (
           <div className="widget-actions">
-            <button className="action-btn btn-yes" onClick={() => handleResponse(true)} title="Drank it">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+            <button className="action-btn btn-yes" onClick={() => handleResponse(true, 'water', 1)} title="Water (100%)">
+              💧
+            </button>
+            <button className="action-btn btn-beverage" onClick={() => handleResponse(true, 'coffee', 0.5)} title="Coffee (50%)">
+              ☕
+            </button>
+            <button className="action-btn btn-beverage" onClick={() => handleResponse(true, 'tea', 0.8)} title="Tea (80%)">
+              🍵
             </button>
             <button className="action-btn btn-no" onClick={() => handleResponse(false)} title="Skip">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>

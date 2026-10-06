@@ -25,6 +25,8 @@ export const syncData = async (req, res) => {
               timestamp: log.timestamp, 
               amountMl: log.amount, 
               response: log.response, 
+              beverageType: log.beverageType || 'water',
+              hydrationMultiplier: log.hydrationMultiplier || 1,
               source: log.source || 'reminder'
             } 
           },

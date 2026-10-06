@@ -15,7 +15,10 @@ const widgetSettingsSchema = new mongoose.Schema({
   dailyGoal: { type: Number, default: 2450 },
   intervalMin: { type: Number, default: 45 },
   manualSipMl: { type: Number, default: 150 },
-  launchOnStartup: { type: Boolean, default: false }
+  launchOnStartup: { type: Boolean, default: false },
+  streak: { type: Number, default: 0 },
+  lastGoalMetDate: { type: String },
+  badges: [{ type: String }]
 });
 export const WidgetSettings = mongoose.model('WidgetSettings', widgetSettingsSchema);
 
@@ -25,6 +28,8 @@ const waterLogSchema = new mongoose.Schema({
   timestamp: { type: Date, required: true },
   amountMl: { type: Number },
   response: { type: String, enum: ['yes', 'no', 'ignored'], required: true },
+  beverageType: { type: String, default: 'water' },
+  hydrationMultiplier: { type: Number, default: 1 },
   source: { type: String, default: 'reminder' }
 });
 export const WaterLog = mongoose.model('WaterLog', waterLogSchema);
