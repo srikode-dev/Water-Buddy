@@ -1,18 +1,22 @@
 @import "tailwindcss";
 
 :root {
-  --background: #070F19;
-  --foreground: #FFFFFF;
-  --surface: #0C141F;
-  --surface-elevated: #141C27;
-  --border: #1E293B;
+  --background: #070f19;
+  --foreground: #dbe3f3;
+  --canvas: #070f19;
+  --canvas-subtle: #0c141f;
+  --canvas-card: #141c27;
+  --canvas-elevated: #1a2432;
+  --surface: #0c141f;
+  --surface-elevated: #141c27;
+  --border: #1e293b;
   --border-subtle: #334155;
   --border-muted: #475569;
-  --accent: #38BDF8;
-  --accent-emerald: #34D399;
-  --text-muted: #94A3B8;
-  --text-subtle: #64748B;
-  --text-secondary: #CBD5E1;
+  --accent: #38bdf8;
+  --accent-emerald: #34d399;
+  --text-muted: #94a3b8;
+  --text-subtle: #64748b;
+  --text-secondary: #cbd5e1;
 }
 
 @theme inline {
@@ -32,12 +36,106 @@
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: var(--font-sans), sans-serif;
+  background-color: #070f19;
+  color: #dbe3f3;
+  font-family: var(--font-sans), 'Space Grotesk', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   overflow-x: hidden;
+  font-feature-settings: "cv02", "cv03", "cv04", "cv11", "tnum";
 }
 
 h1, h2, h3, h4, h5, h6 {
-  font-family: var(--font-heading), sans-serif;
+  font-family: var(--font-heading), 'Space Grotesk', sans-serif;
+}
+
+code, pre, .font-mono {
+  font-family: var(--font-mono), 'JetBrains Mono', monospace;
+}
+
+/* Subtle natural water caustics / grain overlay */
+.film-grain {
+  background-image: radial-gradient(rgba(142, 213, 255, 0.04) 1px, transparent 0);
+  background-size: 32px 32px;
+}
+
+.frosted-glass {
+  background: rgba(12, 20, 31, 0.82);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.frosted-glass-subtle {
+  background: rgba(14, 22, 33, 0.55);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.frosted-pill {
+  background: rgba(12, 20, 31, 0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+/* Range input minimalist styling */
+input[type=range] {
+  -webkit-appearance: none;
+  appearance: none;
+  background: #141f2e;
+  height: 4px;
+  border-radius: 9999px;
+  outline: none;
+}
+
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 18px;
+  width: 18px;
+  border-radius: 50%;
+  background: #38bdf8;
+  cursor: pointer;
+  box-shadow: 0 0 14px rgba(56, 189, 248, 0.6);
+  border: 2px solid #ffffff;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+input[type=range]::-webkit-slider-thumb:hover {
+  transform: scale(1.18);
+  box-shadow: 0 0 20px rgba(56, 189, 248, 0.85);
+}
+
+/* Subtle drift animation */
+@keyframes subtleDrift {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-5px); }
+}
+
+.animate-drift {
+  animation: subtleDrift 8s ease-in-out infinite;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #070f19;
+}
+::-webkit-scrollbar-thumb {
+  background: #1c2738;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #2d3b52;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }

@@ -1,9 +1,11 @@
+"use client";
+
 import React from "react";
 import { BUTTON_VARIANTS } from "@/theme/tokens";
 
 export type ButtonVariant = "primary" | "secondary" | "ghost" | "quickLog";
 
-interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: ButtonVariant;
   icon?: React.ReactNode;
   children: React.ReactNode;
@@ -25,3 +27,5 @@ export function Button({
     </button>
   );
 }
+
+export default Button;
