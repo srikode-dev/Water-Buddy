@@ -1,0 +1,298 @@
+{
+  "name": "Water Buddy Design System & UI Kit",
+  "version": "2.4.0",
+  "descriptor": "Oceanic Abyssal Editorial",
+  "source": "docs/Water Buddy - Design System & UI Kit.svg",
+  "description": "The unified mineral design specification for Water Buddy. Engineered for atmospheric stillness, high accessibility, and tactile desktop ergonomics across web, Windows tray telemetry, and client touchpoints.",
+  "category": "BRAND FOUNDATION & COMPONENT ARCHITECTURE",
+  "colors": {
+    "background": {
+      "name": "Obsidian Base",
+      "hex": "#070F19",
+      "description": "Deep canvas background, providing silent abyss depth"
+    },
+    "surface": {
+      "name": "Abyssal Slate",
+      "hex": "#0C141F",
+      "description": "Primary card, container, and floating capsule background"
+    },
+    "surfaceElevated": {
+      "name": "Mineral Low",
+      "hex": "#141C27",
+      "description": "Elevated card surfaces, active hover states"
+    },
+    "border": {
+      "name": "Slate 800",
+      "hex": "#1E293B",
+      "description": "Component boundaries, card borders, pill container outlines"
+    },
+    "borderSubtle": {
+      "name": "Slate 700",
+      "hex": "#334155",
+      "description": "Hairline inner dividers and subtle borders"
+    },
+    "borderMuted": {
+      "name": "Slate 600",
+      "hex": "#475569",
+      "description": "Secondary borders and inactive outlines"
+    },
+    "accent": {
+      "name": "Crystal Aqua",
+      "hex": "#38BDF8",
+      "description": "Primary interactive accent, active indicators, typography highlights"
+    },
+    "accentEmerald": {
+      "name": "Accent Emerald",
+      "hex": "#34D399",
+      "description": "Status indicators, operational heartbeat, streak badges"
+    },
+    "text": {
+      "primary": {
+        "name": "Pure White",
+        "hex": "#FFFFFF",
+        "description": "High contrast typography and Primary CTA background"
+      },
+      "secondary": {
+        "name": "Slate 300",
+        "hex": "#CBD5E1",
+        "description": "Readable paragraph body and label typography"
+      },
+      "muted": {
+        "name": "Slate 400",
+        "hex": "#94A3B8",
+        "description": "Subtitles, secondary labels, and descriptive captions"
+      },
+      "subtle": {
+        "name": "Slate 500",
+        "hex": "#64748B",
+        "description": "Micro telemetry timestamps and metadata"
+      }
+    }
+  },
+  "typography": {
+    "fonts": {
+      "heading": "Space Grotesk, sans-serif",
+      "sans": "Plus Jakarta Sans, sans-serif",
+      "mono": "JetBrains Mono, monospace"
+    },
+    "scale": {
+      "display": {
+        "fontFamily": "Space Grotesk",
+        "fontSize": "48px",
+        "lineHeight": "56px",
+        "fontWeight": 600,
+        "letterSpacing": "-0.03em"
+      },
+      "headingLarge": {
+        "fontFamily": "Space Grotesk",
+        "fontSize": "32px",
+        "lineHeight": "40px",
+        "fontWeight": 600,
+        "letterSpacing": "-0.025em"
+      },
+      "headingMedium": {
+        "fontFamily": "Space Grotesk",
+        "fontSize": "24px",
+        "lineHeight": "32px",
+        "fontWeight": 600,
+        "letterSpacing": "-0.02em"
+      },
+      "headingSmall": {
+        "fontFamily": "Space Grotesk",
+        "fontSize": "20px",
+        "lineHeight": "28px",
+        "fontWeight": 500,
+        "letterSpacing": "-0.015em"
+      },
+      "bodyLarge": {
+        "fontFamily": "Plus Jakarta Sans",
+        "fontSize": "16px",
+        "lineHeight": "26px",
+        "fontWeight": 400
+      },
+      "body": {
+        "fontFamily": "Plus Jakarta Sans",
+        "fontSize": "15px",
+        "lineHeight": "24px",
+        "fontWeight": 400
+      },
+      "bodyMedium": {
+        "fontFamily": "Plus Jakarta Sans",
+        "fontSize": "14px",
+        "lineHeight": "20px",
+        "fontWeight": 500
+      },
+      "caption": {
+        "fontFamily": "Plus Jakarta Sans",
+        "fontSize": "13px",
+        "lineHeight": "18px",
+        "fontWeight": 400
+      },
+      "telemetryMono": {
+        "fontFamily": "JetBrains Mono",
+        "fontSize": "12px",
+        "lineHeight": "16px",
+        "fontWeight": 500,
+        "letterSpacing": "0.04em"
+      }
+    }
+  },
+  "buttons": {
+    "primary": {
+      "description": "Primary high-contrast call to action",
+      "background": "#FFFFFF",
+      "text": "#070F19",
+      "hoverBackground": "#F1F5F9",
+      "borderRadius": "9999px",
+      "padding": "12px 24px",
+      "fontFamily": "Plus Jakarta Sans",
+      "fontWeight": 600,
+      "fontSize": "15px",
+      "exampleLabel": "Download for Windows 11",
+      "icon": "download"
+    },
+    "secondary": {
+      "description": "Vibrant secondary accent button",
+      "background": "#38BDF8",
+      "text": "#070F19",
+      "hoverBackground": "#0EA5E9",
+      "borderRadius": "9999px",
+      "padding": "12px 24px",
+      "fontFamily": "Plus Jakarta Sans",
+      "fontWeight": 600,
+      "fontSize": "15px",
+      "exampleLabel": "Transmit Dispatch ↗",
+      "icon": "external-link"
+    },
+    "ghost": {
+      "description": "Subtle outline button for tertiary navigation",
+      "background": "transparent",
+      "border": "1px solid #1E293B",
+      "text": "#FFFFFF",
+      "hoverBackground": "#141C27",
+      "hoverBorder": "#38BDF8",
+      "hoverText": "#38BDF8",
+      "borderRadius": "9999px",
+      "padding": "12px 24px",
+      "fontFamily": "Plus Jakarta Sans",
+      "fontWeight": 500,
+      "fontSize": "15px",
+      "exampleLabel": "Inspect Whitepaper"
+    },
+    "quickLog": {
+      "description": "Pill button for rapid telemetry hydration logging",
+      "background": "#1E293B",
+      "border": "1px solid rgba(56, 189, 248, 0.2)",
+      "text": "#38BDF8",
+      "hoverBackground": "#38BDF8",
+      "hoverText": "#070F19",
+      "borderRadius": "9999px",
+      "padding": "6px 14px",
+      "fontFamily": "JetBrains Mono",
+      "fontWeight": 600,
+      "fontSize": "12px",
+      "variants": ["+150ml", "+250ml", "+500ml"]
+    }
+  },
+  "components": {
+    "floatingNav": {
+      "structure": "Fixed glassmorphic capsule centered horizontally",
+      "background": "rgba(12, 20, 31, 0.75)",
+      "backdropBlur": "12px",
+      "border": "1px solid #1E293B",
+      "borderRadius": "9999px",
+      "items": [
+        { "label": "Architecture", "href": "#architecture" },
+        { "label": "Calibrator", "href": "#calibrator" },
+        { "label": "Companion HUD", "href": "#companion" },
+        { "label": "Pricing", "href": "#pricing" }
+      ],
+      "cta": {
+        "variant": "primary",
+        "label": "Download v2.4"
+      }
+    },
+    "heroSection": {
+      "badge": "🟢 PRODUCTION TOKENS · V2.4",
+      "headline": "Hydration, distilled to silence.",
+      "subheadline": "An ambient desktop companion engineered for atmospheric stillness, high accessibility, and tactile desktop ergonomics.",
+      "primaryCta": "Download for Windows 11",
+      "ghostCta": "Inspect Whitepaper"
+    },
+    "biometricCalibrator": {
+      "title": "Biometric Calibrator",
+      "badge": "ADAPTIVE ENGINE",
+      "description": "Real-time dosage formula tuning based on mass and activity tier.",
+      "inputs": {
+        "weightRange": { "min": 45, "max": 120, "default": 72, "unit": "kg" },
+        "activityLevels": ["Sedentary", "Moderate", "High Athletic"],
+        "climateZones": ["Temperate", "Arid / Hot", "Tropical"]
+      },
+      "outputs": [
+        { "label": "Computed Daily Intake", "formula": "weightKg * 35 + activityOffset + climateOffset", "unit": "ml" },
+        { "label": "Auto-Calculated Sip Size", "formula": "intake / remindersCount", "unit": "ml" }
+      ]
+    },
+    "companionHudWidget": {
+      "title": "Win32 Tray Telemetry",
+      "badge": "SYSTEM COMPANION",
+      "progressRing": {
+        "metric": "Current / Goal",
+        "exampleValues": { "current": 1850, "goal": 2500, "unit": "ml", "percentage": 74 }
+      },
+      "status": "Optimal Hydration Velocity",
+      "nextInterval": "18m remaining",
+      "quickActions": ["+150ml", "+250ml"]
+    },
+    "featureCards": [
+      {
+        "id": "kernel-arch",
+        "title": "Windows Tray Kernel Architecture",
+        "description": "Native Win32 system tray hook. Less than 24MB working memory, instant wake, and frameless hardware accelerated canvas.",
+        "tag": "WIN32 NATIVE"
+      },
+      {
+        "id": "zero-telemetry",
+        "title": "Zero-Telemetry Privacy Stance",
+        "description": "Your biological rhythm stays on your machine. Biometrics and logs are cryptographically encrypted locally.",
+        "tag": "LOCAL-FIRST"
+      },
+      {
+        "id": "adaptive-sip",
+        "title": "Biometric Adaptive Sip Engine",
+        "description": "No arbitrary water reminders. Sips dynamically adjust in volume depending on time elapsed and completed intervals.",
+        "tag": "MATHEMATICAL DOSAGE"
+      },
+      {
+        "id": "ambient-presence",
+        "title": "Atmospheric Mineral Presence",
+        "description": "Subtle character walk-in notifications designed never to steal window focus or interrupt deep creative flow.",
+        "tag": "FOCUS GUARANTEE"
+      }
+    ],
+    "pricingCard": {
+      "title": "Transparent Ownership in INR (₹)",
+      "badge": "LIFETIME LICENSE",
+      "currency": "INR",
+      "symbol": "₹",
+      "price": 899,
+      "tagline": "Pay once, own forever. Zero recurring subscriptions, zero telemetry surveillance.",
+      "perks": [
+        "Windows 11 certified companion installer",
+        "All future desktop kernel updates included",
+        "Offline-first local telemetry vault",
+        "Full sprite character catalog unlocked",
+        "Direct developer dispatch support"
+      ],
+      "cta": {
+        "variant": "secondary",
+        "label": "Transmit Dispatch ↗"
+      }
+    },
+    "footerStatusCapsule": {
+      "status": "🟢 All systems operational · Windows 11 Certified",
+      "version": "Water Buddy v2.4",
+      "copyright": "Water Buddy. Atmospheric Hydration System."
+    }
+  }
+}
