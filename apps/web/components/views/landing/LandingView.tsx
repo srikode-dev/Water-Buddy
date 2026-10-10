@@ -3,10 +3,12 @@
 import React, { useState } from 'react';
 import { ActiveTab, WorkspaceRoutine } from '@/types';
 import { TrayCompanion } from '@/components/features/tray-companion';
-import { Download, ArrowUpRight, Cpu, Sliders, ShieldCheck, Check, Sparkles } from 'lucide-react';
+import { TextManifesto } from '@/components/features/TextManifesto';
+import { WalkInPreview } from '@/components/features/WalkInPreview';
+import { Download, Monitor, ShieldCheck, Zap, Heart, CheckCircle2, Sliders, ArrowDown, Sparkles } from 'lucide-react';
 import { playBasaltDrop } from '@/utils/audio';
 
-interface LandingViewProps {
+export interface LandingViewProps {
   currentIntake: number;
   dailyGoal: number;
   onLogWater: (amount: number, label: string) => void;
@@ -18,7 +20,7 @@ interface LandingViewProps {
   onToast: (msg: string) => void;
 }
 
-export const LandingView: React.FC<LandingViewProps> = ({
+export function LandingView({
   currentIntake,
   dailyGoal,
   onLogWater,
@@ -28,8 +30,8 @@ export const LandingView: React.FC<LandingViewProps> = ({
   onTriggerDownload,
   onTriggerCheckout,
   onToast,
-}) => {
-  // Calibration Engine state
+}: LandingViewProps) {
+  // Goal calculator state
   const [weightKg, setWeightKg] = useState(70);
   const [routine, setRoutine] = useState<WorkspaceRoutine>('desk');
 
@@ -45,448 +47,402 @@ export const LandingView: React.FC<LandingViewProps> = ({
     }
   };
 
-  // Clinical baseline formula: (weight * 35ml) + exertion bonus, rounded to nearest 50ml
   const calculatedGoal = Math.round(((weightKg * 35) + getExertionBonus(routine)) / 50) * 50;
   const glasses = Math.round(calculatedGoal / 250);
-
-  const getPacingIntervalText = () => {
-    if (routine === 'athletic') return 'Every 35 minutes (High Activity)';
-    if (routine === 'moderate') return 'Every 42 minutes';
-    return 'Every 48 minutes';
-  };
 
   const handleApplyGoal = () => {
     playBasaltDrop();
     onUpdateGoal(calculatedGoal);
-    onToast(`Tray Companion daily goal updated to ${calculatedGoal.toLocaleString()} ml!`);
+    onToast(`Daily water target updated to ${calculatedGoal.toLocaleString()} ml!`);
+  };
+
+  const scrollToDemo = () => {
+    const el = document.getElementById('interactive-demo');
+    if (el) el.scrollIntoView({ behavior: 'smooth' });
   };
 
   return (
-    <div className="space-y-32 md:space-y-40 pb-16">
-      {/* Atmospheric Mineral Light Cones */}
+    <div className="space-y-24 sm:space-y-32 pb-16">
+      {/* Ambient background glow effects */}
       <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
-        <div className="absolute -top-40 left-1/2 -translate-x-1/2 w-[900px] h-[550px] bg-gradient-to-b from-[#38bdf8]/10 via-slate-800/5 to-transparent blur-[140px] opacity-70"></div>
-        <div className="absolute top-[40%] -left-48 w-[500px] h-[500px] bg-cyan-950/20 blur-[130px] rounded-full"></div>
-        <div className="absolute top-[75%] -right-48 w-[600px] h-[600px] bg-sky-950/15 blur-[160px] rounded-full"></div>
+        <div className="absolute -top-40 left-1/2 -translate-x-1/2 w-[900px] h-[550px] bg-gradient-to-b from-[#38bdf8]/15 via-slate-800/5 to-transparent blur-[140px] opacity-70" />
+        <div className="absolute top-[40%] -left-48 w-[500px] h-[500px] bg-cyan-950/20 blur-[130px] rounded-full" />
+        <div className="absolute top-[75%] -right-48 w-[600px] h-[600px] bg-sky-950/15 blur-[160px] rounded-full" />
       </div>
 
-      {/* 1. CINEMATIC HERO SECTION */}
-      <section className="relative z-10 w-full pt-6 md:pt-10">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-center">
-          {/* Left: Poetic Editorial Copy */}
-          <div className="lg:col-span-7 flex flex-col gap-6">
-            <div className="inline-flex items-center gap-2 text-[11px] font-mono uppercase tracking-[0.22em] text-[#38bdf8]/90">
-              <span>STUDIO UTILITY</span>
-              <span className="text-white/20">—</span>
-              <span>EDITION 2025.1</span>
+      {/* 1. HERO SECTION */}
+      <section className="relative z-10 w-full pt-8 md:pt-14">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-center">
+          {/* Left: Headline & Explanation */}
+          <div className="lg:col-span-7 flex flex-col gap-6 text-left">
+            <div className="inline-flex items-center gap-2 rounded-full border border-sky-400/20 bg-[#0C141F]/80 px-3.5 py-1 text-xs font-mono text-[#38BDF8] w-fit shadow-inner">
+              <span className="h-2 w-2 rounded-full bg-[#34D399] animate-pulse" />
+              <span>WINDOWS 10 & 11 APP</span>
+              <span className="text-slate-600">•</span>
+              <span>LIGHTWEIGHT &lt;25MB RAM</span>
             </div>
 
-            <h1 className="text-4xl sm:text-6xl md:text-7xl font-normal text-white tracking-[-0.035em] leading-[1.05]">
-              Hydration, <br />
-              <span className="text-slate-400 italic font-light">distilled</span> to silence.
+            <h1 className="text-4xl sm:text-5xl md:text-6xl font-semibold text-white tracking-tight leading-[1.12]">
+              The desktop buddy that reminds you to{' '}
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#38BDF8] to-[#34D399]">
+                drink water.
+              </span>
             </h1>
 
-            <p className="text-base sm:text-lg text-slate-300 font-light leading-relaxed max-w-xl">
-              A silent Windows taskbar companion crafted for prolonged creative deep work. Mindful intervals, adaptive biological pacing, zero notification noise.
+            <p className="text-base sm:text-lg text-slate-300 font-normal leading-relaxed max-w-xl">
+              A friendly character walks quietly across your screen while you work, study, or game. 
+              Gentle walk-in reminders, one-click logging from your Windows tray, and zero annoying popups.
             </p>
 
             {/* CTAs */}
             <div className="flex flex-wrap items-center gap-4 pt-2">
               <button
                 onClick={onTriggerDownload}
-                className="inline-flex items-center gap-3 px-6 py-3.5 rounded-full bg-[#38bdf8] text-[#070f19] text-sm font-semibold tracking-wide hover:bg-white active:scale-95 transition-all shadow-[0_4px_24px_rgba(56,189,248,0.3)] hover:scale-[1.02]"
+                className="inline-flex items-center gap-2.5 px-7 py-3.5 rounded-full bg-white text-[#070F19] text-sm font-semibold tracking-wide hover:bg-slate-200 active:scale-95 transition-all shadow-xl hover:scale-105 cursor-pointer"
               >
                 <Download className="w-4 h-4" />
-                <span>Download for Windows 10 / 11</span>
+                <span>Download for Windows (.exe)</span>
               </button>
 
               <button
-                onClick={() => onNavigateTab('architecture')}
-                className="inline-flex items-center gap-2 px-5 py-3.5 rounded-full bg-white/[0.04] hover:bg-white/[0.08] text-[#dbe3f3] border border-white/10 text-sm font-normal tracking-wide transition-colors"
+                onClick={scrollToDemo}
+                className="inline-flex items-center gap-2 px-6 py-3.5 rounded-full border border-white/10 bg-[#0C141F]/60 text-slate-300 hover:text-white hover:border-[#38BDF8] text-sm font-medium transition-all cursor-pointer"
               >
-                <span>Scientific Metric</span>
-                <ArrowUpRight className="w-4 h-4 text-slate-400" />
+                <span>Try Live Demo</span>
+                <ArrowDown className="w-4 h-4 text-[#38BDF8]" />
               </button>
             </div>
 
-            <div className="flex items-center gap-4 sm:gap-6 pt-3 text-xs font-mono text-slate-400">
-              <span>14 MB Lightweight</span>
-              <span className="text-slate-600">•</span>
-              <span>₹0 Free Tier</span>
-              <span className="text-slate-600">•</span>
-              <span>Pure Mineral Dark UI</span>
-            </div>
-          </div>
-
-          {/* Right: Ultra-Sleek Mineral Glass Windows 11 Tray Widget */}
-          <div className="lg:col-span-5 w-full flex justify-center">
-            <TrayCompanion
-              currentIntake={currentIntake}
-              dailyGoal={dailyGoal}
-              onLogWater={onLogWater}
-              onReset={onResetIntake}
-              onUpdateGoal={onUpdateGoal}
-            />
-          </div>
-        </div>
-      </section>
-
-      {/* 2. MINIMALIST 3-PILLAR EXPERIENCE */}
-      <section className="relative z-10 w-full" id="experience">
-        <div className="flex items-center gap-3 text-xs font-mono uppercase tracking-[0.22em] text-slate-400 mb-10">
-          <span>01</span>
-          <span className="w-8 h-[1px] bg-white/10"></span>
-          <span>THE ARCHITECTURE</span>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8">
-          {/* Pillar 1 */}
-          <div className="frosted-glass-subtle rounded-2xl p-8 flex flex-col justify-between hover:border-white/15 transition-all duration-300 group">
-            <div className="flex flex-col gap-4">
-              <span className="font-mono text-xs text-[#38bdf8]/80 font-medium">01 / PACING</span>
-              <h3 className="text-xl text-white font-normal tracking-tight">Adaptive biological intervals.</h3>
-              <p className="text-sm text-slate-300 leading-relaxed font-light">
-                Water Buddy listens for mouse and keyboard stillness. If you step away from the desk or get locked in a meeting, reminders recalibrate silently.
-              </p>
-            </div>
-            <div className="pt-8 text-xs font-mono text-slate-400 flex items-center gap-2">
-              <span className="material-symbols-outlined text-sm text-[#38bdf8]">sensors</span>
-              <span>Zero notification spam</span>
-            </div>
-          </div>
-
-          {/* Pillar 2 */}
-          <div className="frosted-glass-subtle rounded-2xl p-8 flex flex-col justify-between hover:border-white/15 transition-all duration-300 group">
-            <div className="flex flex-col gap-4">
-              <span className="font-mono text-xs text-[#38bdf8]/80 font-medium">02 / INTERFACE</span>
-              <h3 className="text-xl text-white font-normal tracking-tight">Volcanic slate aesthetics.</h3>
-              <p className="text-sm text-slate-300 leading-relaxed font-light">
-                Docked on the Windows 11 system tray. Deep basalt dark mode designed to blend seamlessly beside your visual code editor, Figma, or terminal.
-              </p>
-            </div>
-            <div className="pt-8 text-xs font-mono text-slate-400 flex items-center gap-2">
-              <span className="material-symbols-outlined text-sm text-[#38bdf8]">dock_to_bottom</span>
-              <span>Taskbar native footprint</span>
-            </div>
-          </div>
-
-          {/* Pillar 3 */}
-          <div className="frosted-glass-subtle rounded-2xl p-8 flex flex-col justify-between hover:border-white/15 transition-all duration-300 group">
-            <div className="flex flex-col gap-4">
-              <span className="font-mono text-xs text-[#38bdf8]/80 font-medium">03 / TELEMETRY</span>
-              <h3 className="text-xl text-white font-normal tracking-tight">Multi-device cloud ledger.</h3>
-              <p className="text-sm text-slate-300 leading-relaxed font-light">
-                One-click Google authentication. Keep full weekly hydration telemetry securely synced with upcoming mobile applications and wearables.
-              </p>
-            </div>
-            <div className="pt-8 text-xs font-mono text-slate-400 flex items-center gap-2">
-              <span className="material-symbols-outlined text-sm text-[#38bdf8]">cloud_done</span>
-              <span>Google Cloud infrastructure</span>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* 3. REFINED HYDRATION METRIC / CALIBRATOR */}
-      <section className="relative z-10 w-full" id="metrics">
-        <div className="frosted-glass rounded-2xl p-8 md:p-12 border border-white/10">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
-            {/* Explanation & Sliders */}
-            <div className="lg:col-span-7 flex flex-col gap-6">
-              <div className="flex items-center gap-3 text-xs font-mono uppercase tracking-[0.22em] text-slate-400">
-                <span>02</span>
-                <span className="w-8 h-[1px] bg-white/10"></span>
-                <span>CALIBRATION ENGINE</span>
+            {/* Trust bullet points */}
+            <div className="flex flex-wrap items-center gap-6 text-xs text-slate-400 pt-3">
+              <div className="flex items-center gap-1.5">
+                <CheckCircle2 className="w-4 h-4 text-[#34D399]" />
+                <span>Never steals typing focus</span>
               </div>
-
-              <h2 className="text-3xl sm:text-4xl font-normal text-white tracking-tight">
-                Calculated to your bodily mass.
-              </h2>
-
-              <p className="text-sm text-slate-300 font-light leading-relaxed">
-                Standard 2-liter generalizations ignore human physiology. Adjust your mass and exertion to observe your scientific baseline.
-              </p>
-
-              {/* Slider: Weight */}
-              <div className="flex flex-col gap-2 pt-2">
-                <div className="flex justify-between items-center text-xs font-mono">
-                  <span className="text-slate-400 uppercase tracking-wider">Body Weight</span>
-                  <span className="text-white text-sm font-semibold">{weightKg} kg</span>
-                </div>
-                <input
-                  type="range"
-                  min="45"
-                  max="120"
-                  value={weightKg}
-                  onChange={(e) => setWeightKg(parseInt(e.target.value, 10))}
-                  className="w-full"
-                />
-                <div className="flex justify-between text-[10px] font-mono text-slate-500">
-                  <span>45 kg</span>
-                  <span>80 kg</span>
-                  <span>120 kg</span>
-                </div>
+              <div className="flex items-center gap-1.5">
+                <CheckCircle2 className="w-4 h-4 text-[#34D399]" />
+                <span>100% Offline & Private</span>
               </div>
-
-              {/* Exertion Switcher */}
-              <div className="flex flex-col gap-2 pt-2">
-                <span className="text-xs font-mono text-slate-400 uppercase tracking-wider">Workspace Routine</span>
-                <div className="grid grid-cols-3 gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setRoutine('desk')}
-                    className={`py-2 px-3 rounded-lg text-xs font-mono text-center transition-all border ${
-                      routine === 'desk'
-                        ? 'bg-white/10 text-white border-white/20 shadow-sm'
-                        : 'bg-white/[0.03] text-slate-400 hover:text-white border-white/5'
-                    }`}
-                  >
-                    Desk Only
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setRoutine('moderate')}
-                    className={`py-2 px-3 rounded-lg text-xs font-mono text-center transition-all border ${
-                      routine === 'moderate'
-                        ? 'bg-white/10 text-white border-white/20 shadow-sm'
-                        : 'bg-white/[0.03] text-slate-400 hover:text-white border-white/5'
-                    }`}
-                  >
-                    Moderate
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setRoutine('athletic')}
-                    className={`py-2 px-3 rounded-lg text-xs font-mono text-center transition-all border ${
-                      routine === 'athletic'
-                        ? 'bg-white/10 text-white border-white/20 shadow-sm'
-                        : 'bg-white/[0.03] text-slate-400 hover:text-white border-white/5'
-                    }`}
-                  >
-                    Athletic
-                  </button>
-                </div>
+              <div className="flex items-center gap-1.5">
+                <CheckCircle2 className="w-4 h-4 text-[#34D399]" />
+                <span>No account required</span>
               </div>
             </div>
+          </div>
 
-            {/* Dynamic Output Card */}
-            <div className="lg:col-span-5 bg-[#141c27]/90 rounded-xl p-8 border border-white/5 flex flex-col justify-between gap-6 text-center sm:text-left shadow-xl">
-              <div>
-                <span className="text-xs font-mono uppercase tracking-wider text-[#38bdf8]/90 font-medium">
-                  Tailored Daily Goal
-                </span>
-                <div className="flex items-baseline justify-center sm:justify-start gap-2 mt-2">
-                  <span className="font-display text-5xl md:text-6xl text-white font-normal tracking-tight tabular-nums">
-                    {calculatedGoal.toLocaleString()}
-                  </span>
-                  <span className="font-mono text-sm text-slate-400">ml / day</span>
+          {/* Right: Interactive Tray Widget Simulator */}
+          <div className="lg:col-span-5 flex flex-col items-center">
+            <div className="w-full">
+              <div className="text-center mb-3">
+                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#0C141F] border border-sky-400/20 text-[11px] font-mono text-[#38BDF8]">
+                  <Sparkles className="w-3 h-3 text-[#38BDF8]" />
+                  <span>IN-BROWSER INTERACTIVE PREVIEW</span>
                 </div>
-                <p className="text-xs text-slate-300 mt-2 font-light">
-                  Equivalent to {glasses} glasses across an 8-hour workday.
+                <p className="text-xs text-slate-400 mt-1">
+                  Try logging water right now to see how the desktop flow works:
                 </p>
               </div>
 
-              <div className="pt-6 border-t border-white/5 flex flex-col gap-3">
-                <div className="flex items-center justify-between text-xs font-mono">
-                  <span className="text-slate-400">Pacing Interval</span>
-                  <span className="text-white font-medium">{getPacingIntervalText()}</span>
-                </div>
-                <div className="flex items-center justify-between text-xs font-mono">
-                  <span className="text-slate-400">Telemetry Precision</span>
-                  <span className="text-emerald-400 font-medium">99.4% Clinical Fit</span>
-                </div>
-              </div>
-
-              <button
-                type="button"
-                onClick={handleApplyGoal}
-                className="w-full py-2.5 rounded-lg bg-white/10 hover:bg-[#38bdf8] text-white hover:text-[#070f19] text-xs font-mono uppercase tracking-wider transition-all flex items-center justify-center gap-2 border border-white/10 font-semibold"
-              >
-                <Sparkles className="w-3.5 h-3.5" />
-                <span>Apply to Tray Companion</span>
-              </button>
+              <TrayCompanion
+                currentIntake={currentIntake}
+                dailyGoal={dailyGoal}
+                onLogWater={onLogWater}
+                onReset={onResetIntake}
+                onUpdateGoal={onUpdateGoal}
+              />
             </div>
           </div>
         </div>
       </section>
 
-      {/* 4. CLEAN INR PRICING (HONEST INVESTMENT) */}
-      <section className="relative z-10 w-full" id="pricing">
-        <div className="flex flex-col items-center text-center gap-3 mb-12">
-          <div className="flex items-center gap-3 text-xs font-mono uppercase tracking-[0.22em] text-slate-400">
-            <span>03</span>
-            <span className="w-8 h-[1px] bg-white/10"></span>
-            <span>HONEST INVESTMENT</span>
-          </div>
-          <h2 className="text-3xl sm:text-4xl text-white font-normal tracking-tight">Transparent pricing in INR (₹).</h2>
-          <p className="text-sm text-slate-300 font-light max-w-md">
-            No hidden fees, no subscriptions required if you prefer owning your software outright.
+      {/* 2. REALFOOD.GOV INSPIRED SCROLL-REVEALED MANIFESTO */}
+      <TextManifesto />
+
+      {/* 3. LIVE INTERACTIVE WALK-IN SIMULATOR */}
+      <section className="relative z-10 w-full">
+        <WalkInPreview onLogWater={onLogWater} onToast={onToast} />
+      </section>
+
+      {/* 4. HOW IT WORKS (3 SIMPLE STEPS) */}
+      <section className="relative z-10 w-full" id="how-it-works">
+        <div className="text-center max-w-2xl mx-auto mb-14">
+          <span className="text-xs font-mono text-[#38BDF8] uppercase tracking-wider font-semibold">
+            SIMPLE & EFFECTIVE
+          </span>
+          <h2 className="text-3xl sm:text-4xl font-semibold text-white mt-2">
+            How Water Buddy works
+          </h2>
+          <p className="text-sm sm:text-base text-slate-400 mt-2">
+            Built for people who spend long hours at a computer and forget to stay hydrated.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto items-stretch">
-          {/* Tier 1: Free Starter */}
-          <div className="frosted-glass-subtle rounded-2xl p-8 md:p-10 flex flex-col justify-between border border-white/5 hover:border-white/10 transition-all">
-            <div className="flex flex-col gap-4">
-              <div className="flex justify-between items-baseline">
-                <span className="text-xs font-mono uppercase tracking-wider text-slate-400">Starter Edition</span>
-                <span className="text-xs font-mono text-slate-400">Local Only</span>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {[
+            {
+              step: "01",
+              title: "Pick Your Goal & Interval",
+              desc: "Enter your body weight or set a custom goal (like 2.5 Liters). Pick how often you want reminders, such as every 30 or 45 minutes.",
+              icon: <Sliders className="w-5 h-5 text-[#38BDF8]" />,
+            },
+            {
+              step: "02",
+              title: "A Cute Character Walks In",
+              desc: "At your set interval, an animated buddy strolls across the bottom of your screen and asks: 'Did you drink water?'. It never steals your typing focus.",
+              icon: <Heart className="w-5 h-5 text-[#38BDF8]" />,
+            },
+            {
+              step: "03",
+              title: "One-Click Logging",
+              desc: "Click 'Yes' (+150ml or +250ml) or 'No'. Your buddy reacts with cheerful animations, your daily tray progress ring fills up, and you stay healthy.",
+              icon: <Zap className="w-5 h-5 text-[#38BDF8]" />,
+            },
+          ].map((item, idx) => (
+            <div
+              key={idx}
+              className="frosted-glass rounded-2xl p-7 flex flex-col justify-between border border-white/10 hover:border-[#38BDF8]/40 transition-all group"
+            >
+              <div>
+                <div className="flex items-center justify-between mb-5">
+                  <div className="h-10 w-10 rounded-xl bg-[#141C27] border border-white/10 flex items-center justify-center group-hover:scale-110 transition-transform">
+                    {item.icon}
+                  </div>
+                  <span className="font-mono text-2xl font-bold text-slate-600 group-hover:text-[#38BDF8] transition-colors">
+                    {item.step}
+                  </span>
+                </div>
+                <h3 className="text-lg font-semibold text-white mb-2">{item.title}</h3>
+                <p className="text-sm text-slate-300 leading-relaxed">{item.desc}</p>
               </div>
-              <div className="flex items-baseline gap-1 my-2">
-                <span className="font-display text-4xl sm:text-5xl text-white font-normal">₹0</span>
-                <span className="font-mono text-xs text-slate-400">/ forever</span>
-              </div>
-              <p className="text-xs text-slate-300 font-light leading-relaxed">
-                Essential background hydration companion for single-workstation users.
-              </p>
-              <ul className="flex flex-col gap-3 pt-4 text-xs font-sans text-slate-300 font-light border-t border-white/5">
-                <li className="flex items-center gap-2.5">
-                  <span className="w-1.5 h-1.5 rounded-full bg-slate-500"></span>
-                  <span>Windows 10 / 11 system tray widget</span>
-                </li>
-                <li className="flex items-center gap-2.5">
-                  <span className="w-1.5 h-1.5 rounded-full bg-slate-500"></span>
-                  <span>Preset 30 to 90 min gentle interval chimes</span>
-                </li>
-                <li className="flex items-center gap-2.5">
-                  <span className="w-1.5 h-1.5 rounded-full bg-slate-500"></span>
-                  <span>7-day local intake memory cache</span>
-                </li>
-              </ul>
             </div>
-            <div className="pt-8">
-              <button
-                onClick={onTriggerDownload}
-                className="w-full py-3 rounded-full bg-white/[0.05] hover:bg-white/[0.1] text-white border border-white/10 text-xs font-mono uppercase tracking-wider flex items-center justify-center transition-colors"
-              >
-                Download .exe Free
-              </button>
-            </div>
-          </div>
+          ))}
+        </div>
+      </section>
 
-          {/* Tier 2: Pro & Lifetime */}
-          <div className="frosted-glass rounded-2xl p-8 md:p-10 flex flex-col justify-between border border-[#38bdf8]/30 relative shadow-2xl">
-            <div className="absolute -top-3 right-8 px-3 py-0.5 rounded-full bg-[#38bdf8]/20 border border-[#38bdf8]/40 text-[10px] font-mono text-[#38bdf8] uppercase tracking-wider font-semibold">
-              LIFETIME OPTION
-            </div>
-            <div className="flex flex-col gap-4">
-              <div className="flex justify-between items-baseline">
-                <span className="text-xs font-mono uppercase tracking-wider text-[#38bdf8] font-medium">Buddy Studio Pro</span>
-                <span className="text-xs font-mono text-[#38bdf8]/80">Full Telemetry</span>
+      {/* 6. INTERACTIVE DAILY GOAL CALCULATOR */}
+      <section className="relative z-10 w-full" id="interactive-demo">
+        <div className="frosted-glass rounded-3xl p-8 sm:p-12 border border-white/10 relative overflow-hidden">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
+            {/* Left: Calculator Form */}
+            <div className="lg:col-span-7 space-y-6">
+              <div>
+                <span className="text-xs font-mono text-[#38BDF8] uppercase tracking-wider font-semibold">
+                  DAILY WATER CALCULATOR
+                </span>
+                <h2 className="text-2xl sm:text-3xl font-semibold text-white mt-1">
+                  Find your recommended water goal
+                </h2>
+                <p className="text-sm text-slate-300 mt-1">
+                  Calculate the ideal daily intake for your body weight and daily desk routine.
+                </p>
               </div>
-              <div className="flex items-baseline gap-2 my-2">
-                <span className="font-display text-4xl sm:text-5xl text-white font-normal">₹199</span>
-                <span className="font-mono text-xs text-slate-400">/ month or <strong>₹1,999</strong> once</span>
+
+              {/* Weight Slider */}
+              <div className="space-y-3 bg-[#070F19]/60 p-5 rounded-2xl border border-white/5">
+                <div className="flex justify-between items-center">
+                  <label className="text-sm font-medium text-slate-200">Your Body Weight</label>
+                  <span className="font-mono text-base font-bold text-[#38BDF8] bg-[#141C27] px-3 py-1 rounded-lg border border-white/10">
+                    {weightKg} kg
+                  </span>
+                </div>
+                <input
+                  type="range"
+                  min="40"
+                  max="130"
+                  value={weightKg}
+                  onChange={(e) => setWeightKg(Number(e.target.value))}
+                  className="w-full cursor-pointer"
+                />
+                <div className="flex justify-between text-[11px] font-mono text-slate-500">
+                  <span>40 kg</span>
+                  <span>70 kg (Average)</span>
+                  <span>130 kg</span>
+                </div>
               </div>
-              <p className="text-xs text-slate-300 font-light leading-relaxed">
-                Google Cloud backup, continuous habit streaks, dynamic mass calibration, and priority mobile beta access.
-              </p>
-              <ul className="flex flex-col gap-3 pt-4 text-xs font-sans text-slate-300 font-light border-t border-white/5">
-                <li className="flex items-center gap-2.5">
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#38bdf8]"></span>
-                  <span>End-to-end Google Account Cloud Telemetry</span>
-                </li>
-                <li className="flex items-center gap-2.5">
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#38bdf8]"></span>
-                  <span>Biological formula sync & dynamic pacing</span>
-                </li>
-                <li className="flex items-center gap-2.5">
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#38bdf8]"></span>
-                  <span>Mineral Basalt & Studio sound pack presets</span>
-                </li>
-                <li className="flex items-center gap-2.5">
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#38bdf8]"></span>
-                  <span>Early priority invite for iOS & Android Companion</span>
-                </li>
-              </ul>
-            </div>
-            <div className="pt-8">
+
+              {/* Activity Tier */}
+              <div className="space-y-2">
+                <label className="text-xs font-mono text-slate-400 uppercase tracking-wider">
+                  Daily Desk Routine
+                </label>
+                <div className="grid grid-cols-3 gap-2">
+                  {[
+                    { id: 'desk', label: 'Desk / Sedentary', sub: 'Standard work' },
+                    { id: 'moderate', label: 'Moderate', sub: '+400ml offset' },
+                    { id: 'athletic', label: 'Active / Workout', sub: '+800ml offset' },
+                  ].map((tier) => (
+                    <button
+                      key={tier.id}
+                      onClick={() => setRoutine(tier.id as WorkspaceRoutine)}
+                      className={`p-3 rounded-xl border text-left transition-all cursor-pointer ${
+                        routine === tier.id
+                          ? 'bg-[#38BDF8]/15 border-[#38BDF8] text-white shadow-md'
+                          : 'bg-[#070F19]/40 border-white/5 text-slate-400 hover:text-white'
+                      }`}
+                    >
+                      <div className="text-xs font-semibold">{tier.label}</div>
+                      <div className="text-[10px] text-slate-500">{tier.sub}</div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Action Button */}
               <button
-                type="button"
-                onClick={onTriggerCheckout}
-                className="w-full py-3.5 rounded-full bg-[#38bdf8] text-[#070f19] font-display text-xs font-semibold uppercase tracking-wider hover:bg-white active:scale-95 transition-all shadow-lg shadow-[#38bdf8]/20"
+                onClick={handleApplyGoal}
+                className="w-full sm:w-auto px-6 py-3 rounded-full bg-[#38BDF8] text-[#070F19] text-xs font-bold uppercase tracking-wider hover:bg-white transition-all shadow-lg cursor-pointer"
               >
-                Get Lifetime Access (₹1,999)
+                Apply Target to Live Preview ({calculatedGoal.toLocaleString()} ml)
               </button>
+            </div>
+
+            {/* Right: Recommendation Display Card */}
+            <div className="lg:col-span-5 bg-[#070F19]/80 border border-white/10 rounded-2xl p-6 sm:p-8 flex flex-col justify-between gap-6 shadow-2xl">
+              <div>
+                <span className="text-xs font-mono text-slate-400 uppercase block">RECOMMENDED TARGET</span>
+                <div className="text-4xl sm:text-5xl font-bold text-white font-mono mt-1">
+                  {calculatedGoal.toLocaleString()} <span className="text-base font-normal text-slate-400">ml / day</span>
+                </div>
+                <div className="text-xs text-[#38BDF8] mt-2 font-mono">
+                  ≈ {glasses} glasses (250ml each)
+                </div>
+              </div>
+
+              <div className="space-y-3 border-t border-white/10 pt-4 text-xs text-slate-300 font-mono">
+                <div className="flex justify-between">
+                  <span className="text-slate-400">Pacing Schedule:</span>
+                  <span className="text-white font-semibold">Every 45 Minutes</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-slate-400">Target Sips per Day:</span>
+                  <span className="text-white font-semibold">{Math.round(calculatedGoal / 150)} Reminders</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-slate-400">Suggested Sip Size:</span>
+                  <span className="text-[#34D399] font-semibold">150ml - 250ml</span>
+                </div>
+              </div>
+
+              <div className="text-[11px] text-slate-500 italic">
+                *General health guideline. You can manually adjust your target anytime in settings.
+              </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* 5. DIRECT WINDOWS TRAY INSTALLER (CTA) */}
-      <section className="relative z-10 w-full" id="download">
-        <div className="frosted-glass rounded-3xl p-10 md:p-16 text-center flex flex-col items-center gap-6 border border-white/10 relative overflow-hidden">
-          <div className="absolute -top-24 left-1/2 -translate-x-1/2 w-96 h-48 bg-[#38bdf8]/10 blur-[100px] pointer-events-none"></div>
+      {/* 7. FEATURES */}
+      <section className="relative z-10 w-full" id="features">
+        <div className="text-center max-w-2xl mx-auto mb-14">
+          <span className="text-xs font-mono text-[#38BDF8] uppercase tracking-wider font-semibold">
+            KEY FEATURES
+          </span>
+          <h2 className="text-3xl sm:text-4xl font-semibold text-white mt-2">
+            Built specifically for Windows
+          </h2>
+          <p className="text-sm sm:text-base text-slate-400 mt-2">
+            Unlike heavy web apps or phone alerts you ignore, Water Buddy stays politely at your desk.
+          </p>
+        </div>
 
-          <span className="text-xs font-mono uppercase tracking-[0.22em] text-[#38bdf8]/90 font-medium">
-            DIRECT WINDOWS TRAY INSTALLER
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {[
+            {
+              title: "Walks Over Any App",
+              desc: "Transparent desktop window lets your buddy walk over code editors, browsers, or games without taking focus away from your typing.",
+              tag: "NON-INTRUSIVE",
+              icon: <Monitor className="w-5 h-5 text-[#38BDF8]" />,
+            },
+            {
+              title: "System Tray Quick Log",
+              desc: "Log +150ml, +250ml, or check your daily progress ring with a single click right from the Windows taskbar tray icon.",
+              tag: "1-CLICK ACCESS",
+              icon: <Zap className="w-5 h-5 text-[#38BDF8]" />,
+            },
+            {
+              title: "Smart Adaptive Sips",
+              desc: "Behind on your goal? Water Buddy automatically recalculates your sip size so you can catch up comfortably before your workday ends.",
+              tag: "AUTO PACING",
+              icon: <Sliders className="w-5 h-5 text-[#38BDF8]" />,
+            },
+            {
+              title: "100% Offline & Private",
+              desc: "All your water logs and settings stay encrypted locally on your computer. No sign-up, no analytics, no cloud trackers.",
+              tag: "LOCAL FIRST",
+              icon: <ShieldCheck className="w-5 h-5 text-[#34D399]" />,
+            },
+            {
+              title: "Uses Under 25MB RAM",
+              desc: "Super optimized desktop background utility. Uses virtually zero CPU and sleeps automatically when you're away from your PC.",
+              tag: "LIGHTWEIGHT",
+              icon: <CheckCircle2 className="w-5 h-5 text-[#38BDF8]" />,
+            },
+            {
+              title: "Quiet Hours & Fullscreen Sleep",
+              desc: "Set quiet hours for evening and bedtime. Automatically suspends reminders when you're watching movies or presenting fullscreen.",
+              tag: "DO NOT DISTURB",
+              icon: <Heart className="w-5 h-5 text-[#34D399]" />,
+            },
+          ].map((f, i) => (
+            <div
+              key={i}
+              className="frosted-glass rounded-2xl p-6 border border-white/10 hover:border-[#38BDF8]/40 transition-all flex flex-col justify-between"
+            >
+              <div>
+                <div className="flex items-center justify-between mb-4">
+                  <div className="h-9 w-9 rounded-lg bg-[#141C27] border border-white/10 flex items-center justify-center">
+                    {f.icon}
+                  </div>
+                  <span className="text-[10px] font-mono text-[#38BDF8] bg-[#38BDF8]/10 px-2 py-0.5 rounded border border-[#38BDF8]/20">
+                    {f.tag}
+                  </span>
+                </div>
+                <h3 className="text-base font-semibold text-white mb-2">{f.title}</h3>
+                <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">{f.desc}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* 5. DOWNLOAD CTA SECTION */}
+      <section className="relative z-10 w-full" id="download">
+        <div className="frosted-glass rounded-3xl p-10 md:p-14 text-center flex flex-col items-center gap-6 border border-white/10 relative overflow-hidden">
+          <div className="absolute -top-24 left-1/2 -translate-x-1/2 w-96 h-48 bg-[#38BDF8]/15 blur-[100px] pointer-events-none" />
+
+          <span className="text-xs font-mono uppercase tracking-wider text-[#38BDF8] font-semibold">
+            GET STARTED IN 10 SECONDS
           </span>
 
-          <h2 className="text-4xl sm:text-5xl md:text-6xl text-white font-normal tracking-[-0.035em] max-w-2xl leading-tight">
-            Bring mindful pacing to your desk today.
+          <h2 className="text-3xl sm:text-4xl md:text-5xl text-white font-semibold tracking-tight max-w-xl">
+            Start staying hydrated while you work.
           </h2>
 
-          <p className="text-sm sm:text-base text-slate-300 font-light max-w-lg">
-            No signups required to start. Installs as a lightweight background service in under ten seconds.
+          <p className="text-sm sm:text-base text-slate-300 max-w-lg">
+            Download the installer for Windows 10 or 11. No accounts, no sign-ups, and free to try.
           </p>
 
           <div className="flex flex-col sm:flex-row items-center gap-4 pt-2">
             <button
               onClick={onTriggerDownload}
-              className="inline-flex items-center gap-3 px-8 py-4 rounded-full bg-white text-[#070f19] hover:bg-[#38bdf8] text-sm font-semibold tracking-wide transition-all shadow-xl hover:scale-105 active:scale-95"
+              className="inline-flex items-center gap-3 px-8 py-4 rounded-full bg-white text-[#070F19] hover:bg-slate-200 text-sm font-semibold tracking-wide transition-all shadow-xl hover:scale-105 active:scale-95 cursor-pointer"
             >
               <Download className="w-4 h-4" />
               <span>Download for Windows (.exe)</span>
             </button>
           </div>
 
-          <div className="flex items-center gap-4 text-[11px] font-mono text-slate-400 pt-2">
-            <span>Version 1.4.2</span>
+          <div className="flex items-center gap-4 text-xs font-mono text-slate-400 pt-1">
+            <span>Windows 10 / 11 (64-bit)</span>
+            <span className="text-slate-600">•</span>
+            <span>14.2 MB Installer</span>
             <span className="text-slate-600">•</span>
             <span>SHA-256 Verified</span>
-            <span className="text-slate-600">•</span>
-            <span>Offline Capable</span>
           </div>
         </div>
       </section>
-
-      {/* 6. EDITORIAL FOOTER */}
-      <footer className="relative z-10 border-t border-white/5 bg-[#0c141f]/50 pt-16 pb-12 -mx-4 md:-mx-8 px-4 md:px-8 mt-20">
-        <div className="max-w-6xl mx-auto flex flex-col gap-10">
-          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
-            <div className="flex items-center gap-3">
-              <div className="w-4 h-4 rounded-full bg-[#38bdf8] shadow-[0_0_8px_#38bdf8]"></div>
-              <span className="font-semibold text-sm text-white tracking-tight">Water Buddy</span>
-              <span className="text-xs font-mono text-slate-400 ml-2">Natural Mineral Studio Edition</span>
-            </div>
-            <div className="flex flex-wrap items-center gap-6 font-mono text-xs text-slate-400">
-              <button onClick={() => onNavigateTab('architecture')} className="hover:text-white transition-colors">
-                Architecture
-              </button>
-              <button onClick={() => onNavigateTab('architecture')} className="hover:text-white transition-colors">
-                Metric
-              </button>
-              <button onClick={() => onNavigateTab('pricing')} className="hover:text-white transition-colors">
-                Pricing (INR)
-              </button>
-              <button onClick={() => onNavigateTab('contact')} className="hover:text-white transition-colors">
-                Contact
-              </button>
-              <button onClick={() => onNavigateTab('design-system')} className="hover:text-white transition-colors">
-                UI Kit
-              </button>
-            </div>
-          </div>
-
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 text-xs font-mono text-slate-500 border-t border-white/5 pt-8">
-            <div>© 2025 Water Buddy Technologies. All rights reserved.</div>
-            <div className="flex items-center gap-2 text-slate-400">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
-              <span>Systems Operational • Google Telemetry Active</span>
-            </div>
-          </div>
-        </div>
-      </footer>
     </div>
   );
-};
+}
+
+export default LandingView;
