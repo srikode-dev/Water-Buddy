@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain, screen } from 'electron';
+import { app, BrowserWindow, ipcMain, screen, Notification } from 'electron';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { startScheduler } from './scheduler.js';
@@ -13,35 +13,79 @@ let settingsWindow;
 let overlayWindow;
 let tray;
 
+function triggerNotification() {
+  const settings = store.get('settings') || {};
+  const cup = settings.manualSipMl || 150;
+  const iconPath = path.join(__dirname, '../public/icon.png');
+
+  // 1. Native Windows Notification Toast
+  if (Notification.isSupported()) {
+    try {
+      const notif = new Notification({
+        title: 'Water Buddy',
+        body: `Time to drink water! Have a glass (${cup} ml) to stay hydrated.`,
+        icon: iconPath,
+        silent: settings.soundOn === false
+      });
+      notif.on('click', () => {
+        if (settingsWindow && !settingsWindow.isDestroyed()) {
+          settingsWindow.show();
+          settingsWindow.focus();
+        }
+      });
+      notif.show();
+    } catch (err) {
+      console.error('Notification error:', err);
+    }
+  }
+
+  // 2. Interactive Desktop HUD Overlay Widget
+  if (overlayWindow && !overlayWindow.isDestroyed()) {
+    overlayWindow.show();
+    overlayWindow.setAlwaysOnTop(true, 'floating');
+    overlayWindow.moveTop();
+    overlayWindow.webContents.send('trigger-walk');
+  }
+}
+
 function createWindows() {
   const primaryDisplay = screen.getPrimaryDisplay();
-  const { width, height } = primaryDisplay.workAreaSize;
+  const { x, y, width, height } = primaryDisplay.workArea;
 
+  const overlayWidth = 470;
+  const overlayHeight = 90;
+
+  // Position at Bottom-Right corner (above the Windows system tray & clock)
   overlayWindow = new BrowserWindow({
-    width: width,
-    height: 300,
-    x: 0,
-    y: height - 300,
+    width: overlayWidth,
+    height: overlayHeight,
+    x: x + width - overlayWidth - 24,
+    y: y + height - overlayHeight - 16,
     transparent: true,
     frame: false,
+    show: false,
     alwaysOnTop: true,
     skipTaskbar: true,
     hasShadow: false,
-    focusable: false,
+    resizable: false,
+    focusable: true,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,
     },
   });
-  overlayWindow.setAlwaysOnTop(true, 'screen-saver');
-  overlayWindow.setIgnoreMouseEvents(true, { forward: true });
+  overlayWindow.setAlwaysOnTop(true, 'floating');
 
   const iconPath = path.join(__dirname, '../public/icon.png');
 
   settingsWindow = new BrowserWindow({
-    width: 800,
-    height: 600,
+    width: 900,
+    height: 660,
+    minWidth: 780,
+    minHeight: 560,
+    backgroundColor: '#070F19',
     icon: iconPath,
+    title: 'Water Buddy',
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,
@@ -69,14 +113,11 @@ app.whenReady().then(() => {
   createWindows();
 
   tray = createTray(
-    () => {
-      if (overlayWindow && !overlayWindow.isDestroyed()) {
-        overlayWindow.webContents.send('trigger-walk');
-      }
-    },
+    () => triggerNotification(),
     () => {
       if (settingsWindow && !settingsWindow.isDestroyed()) {
         settingsWindow.show();
+        settingsWindow.focus();
       }
     },
     () => {
@@ -84,31 +125,26 @@ app.whenReady().then(() => {
     }
   );
 
-  startScheduler(() => {
-    if (overlayWindow && !overlayWindow.isDestroyed()) {
-      overlayWindow.webContents.send('trigger-walk');
-    }
-  });
+  startScheduler(() => triggerNotification());
 
   startSyncService();
 
-  ipcMain.on('set-ignore-mouse-events', (event, ignore, options) => {
-    const win = BrowserWindow.fromWebContents(event.sender);
-    if (win) {
-      win.setIgnoreMouseEvents(ignore, options);
+  ipcMain.on('trigger-test-reminder', () => {
+    triggerNotification();
+  });
+
+  ipcMain.on('hide-overlay', () => {
+    if (overlayWindow && !overlayWindow.isDestroyed()) {
+      overlayWindow.hide();
     }
   });
 
   ipcMain.handle('get-settings', () => store.get('settings'));
   ipcMain.handle('save-settings', (event, settings) => {
     store.set('settings', settings);
-    // Restart scheduler with new interval if changed
-    startScheduler(() => {
-      if (overlayWindow && !overlayWindow.isDestroyed()) {
-        overlayWindow.webContents.send('trigger-walk');
-      }
-    });
+    startScheduler(() => triggerNotification());
   });
+
   ipcMain.handle('get-logs', () => store.get('logs') || []);
   ipcMain.handle('get-auth-token', () => store.get('authToken'));
   ipcMain.handle('set-auth-token', (event, token) => store.set('authToken', token));

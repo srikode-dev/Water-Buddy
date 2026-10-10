@@ -9,8 +9,8 @@ export default defineConfig({
   build: {
     rollupOptions: {
       input: {
-        settings: resolve(__dirname, 'settings.html'),
-        overlay: resolve(__dirname, 'overlay.html'),
+        settings: resolve(import.meta.dirname, 'settings.html'),
+        overlay: resolve(import.meta.dirname, 'overlay.html'),
       },
     },
   },

@@ -22,6 +22,9 @@ export function createTray(triggerNowCallback, openSettingsCallback, quitCallbac
   
   tray.setToolTip('Water Buddy');
   tray.setContextMenu(contextMenu);
+  tray.on('click', () => {
+    openSettingsCallback();
+  });
   
   return tray;
 }

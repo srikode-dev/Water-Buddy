@@ -1,99 +1,69 @@
-body {
+/* Oceanic Abyssal Editorial — Water Buddy Desktop Overlay */
+:root {
+  --canvas-base: #070F19;
+  --surface-abyssal: #0C141F;
+  --surface-mineral: #141C27;
+  --border-slate-800: #1E293B;
+  --accent-aqua: #38BDF8;
+  --accent-emerald: #34D399;
+  --text-pure-white: #FFFFFF;
+  --text-slate-300: #CBD5E1;
+  --text-slate-400: #94A3B8;
+  --text-slate-500: #64748B;
+  
+  --font-heading: 'Space Grotesk', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-body: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+}
+
+* {
+  box-sizing: border-box;
   margin: 0;
+  padding: 0;
+}
+
+body, html {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
   overflow: hidden;
   background: transparent !important;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  font-family: var(--font-body);
+  user-select: none;
+  -webkit-font-smoothing: antialiased;
 }
 
 .overlay-container {
-  width: 100vw;
-  height: 100vh;
-  position: relative;
-  pointer-events: none; /* Let clicks pass through container */
-}
-
-.character {
-  position: absolute;
-  bottom: 20px;
-  left: 0;
-  cursor: pointer;
-  user-select: none;
-  will-change: transform;
-  pointer-events: auto; /* Only character intercepts clicks */
+  width: 100%;
+  height: 100%;
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: flex-end;
+  padding: 6px 10px;
 }
 
-.sprite {
-  font-size: 5rem;
-  line-height: 1;
-  filter: drop-shadow(0 4px 8px rgba(0,0,0,0.2));
-  transition: filter 0.3s ease;
-}
-
-.sprite:hover {
-  filter: drop-shadow(0 8px 16px rgba(0,0,0,0.3));
-}
-
-/* Walking animation */
-@keyframes walk {
-  0% { transform: translateY(0) rotate(0deg); }
-  25% { transform: translateY(-10px) rotate(-10deg); }
-  50% { transform: translateY(0) rotate(0deg); }
-  75% { transform: translateY(-10px) rotate(10deg); }
-  100% { transform: translateY(0) rotate(0deg); }
-}
-
-/* Idle breathing animation */
-@keyframes idle {
-  0%, 100% { transform: translateY(0) scaleY(1); }
-  50% { transform: translateY(-5px) scaleY(0.95); }
-}
-
-.bounce {
-  animation: idle 2s infinite ease-in-out;
-}
-
-.walking-in .bounce {
-  animation: walk 0.5s infinite linear;
-}
-
-.happy-run .bounce, .angry-run .bounce {
-  animation: walk 0.3s infinite linear;
-}
-
-.asking .bounce {
-  animation: idle 2s infinite ease-in-out;
-}
-
-/* Ultra Premium Dark Glass Widget Styles */
+/* Minimal Widget Notification Pill */
 .minimal-widget {
-  position: absolute;
-  bottom: 30px;
-  left: 30px;
   display: flex;
   align-items: center;
-  background: rgba(15, 23, 42, 0.65);
-  backdrop-filter: blur(40px) saturate(150%);
-  -webkit-backdrop-filter: blur(40px) saturate(150%);
-  border-radius: 28px;
-  padding: 16px 24px 16px 16px;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4), 0 1px 3px rgba(255, 255, 255, 0.1) inset, 0 -1px 2px rgba(0,0,0,0.2) inset;
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  transition: transform 0.6s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.4s ease, box-shadow 0.3s ease;
-  transform-origin: bottom left;
-  pointer-events: auto;
-  gap: 18px;
-}
-
-.minimal-widget:hover {
-  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5), 0 1px 3px rgba(255, 255, 255, 0.2) inset;
+  gap: 12px;
+  background: rgba(12, 20, 31, 0.96);
+  backdrop-filter: blur(28px) saturate(180%);
+  -webkit-backdrop-filter: blur(28px) saturate(180%);
+  border: 1px solid rgba(56, 189, 248, 0.35);
+  border-radius: 9999px;
+  padding: 8px 16px 8px 10px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.85), 
+              0 0 24px rgba(56, 189, 248, 0.2),
+              inset 0 1px 1px rgba(255, 255, 255, 0.15);
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease;
+  width: 100%;
+  cursor: default;
 }
 
 .minimal-widget.hidden {
-  transform: translateY(100px) scale(0.9);
+  transform: translateY(30px) scale(0.95);
   opacity: 0;
   pointer-events: none;
 }
@@ -103,6 +73,7 @@ body {
   opacity: 1;
 }
 
+/* Progress Ring */
 .widget-progress {
   position: relative;
   width: 48px;
@@ -110,102 +81,134 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
 }
 
 .progress-bg {
-  stroke: rgba(255, 255, 255, 0.1);
+  stroke: rgba(255, 255, 255, 0.08);
 }
 
 .progress-fill {
-  stroke: url(#progressGradient);
-  transition: stroke-dashoffset 1.5s cubic-bezier(0.4, 0, 0.2, 1);
-  filter: drop-shadow(0 2px 4px rgba(14, 165, 233, 0.6));
+  stroke: url(#oceanicGlow);
+  transition: stroke-dashoffset 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+  filter: drop-shadow(0 2px 6px rgba(56, 189, 248, 0.5));
 }
 
-.progress-icon {
+.progress-center-icon {
   position: absolute;
-  font-size: 1.2rem;
-  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
+/* Text Content */
 .widget-text {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  padding-right: 8px;
+  flex: 1;
+  min-width: 0;
 }
 
 .widget-text h4 {
-  margin: 0 0 4px 0;
-  color: #f8fafc;
-  font-size: 1.05rem;
-  font-weight: 700;
+  font-family: var(--font-heading);
+  font-size: 0.96rem;
+  font-weight: 600;
+  color: var(--text-pure-white);
   letter-spacing: -0.02em;
-  text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+  margin-bottom: 2px;
+  line-height: 1.2;
 }
 
 .widget-text p {
-  margin: 0;
-  color: #94a3b8;
-  font-size: 0.9rem;
+  font-size: 0.78rem;
+  color: var(--text-slate-400);
   font-weight: 500;
+  line-height: 1.2;
 }
 
+/* Action Buttons */
 .widget-actions {
   display: flex;
-  gap: 8px;
+  align-items: center;
+  gap: 7px;
+  flex-shrink: 0;
 }
 
 .action-btn {
-  width: 42px;
-  height: 42px;
-  border-radius: 50%;
   border: none;
+  cursor: pointer;
+  outline: none;
   display: flex;
   align-items: center;
   justify-content: center;
-  cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  outline: none;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.btn-yes {
-  background: linear-gradient(135deg, #0ea5e9, #2563eb);
-  color: white;
-  box-shadow: 0 4px 15px rgba(14, 165, 233, 0.4);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+/* Primary Water Button */
+.btn-water {
+  background: linear-gradient(135deg, #38BDF8 0%, #0284C7 100%);
+  color: #070F19;
+  font-family: var(--font-body);
+  font-size: 0.82rem;
+  font-weight: 700;
+  padding: 7px 13px;
+  border-radius: 9999px;
+  gap: 5px;
+  box-shadow: 0 4px 12px rgba(56, 189, 248, 0.35);
+  white-space: nowrap;
 }
 
-.btn-yes:hover {
-  transform: translateY(-2px) scale(1.05);
-  box-shadow: 0 6px 20px rgba(14, 165, 233, 0.6);
-  background: linear-gradient(135deg, #38bdf8, #3b82f6);
+.btn-water:hover {
+  background: linear-gradient(135deg, #7DD3FC 0%, #38BDF8 100%);
+  transform: translateY(-1px) scale(1.02);
+  box-shadow: 0 6px 16px rgba(56, 189, 248, 0.5);
 }
 
-.btn-no {
-  background: rgba(239, 68, 68, 0.1);
-  border: 1px solid rgba(239, 68, 68, 0.2);
-  color: #fca5a5;
+.btn-water:active {
+  transform: translateY(0) scale(0.98);
 }
 
-.btn-no:hover {
-  background: rgba(239, 68, 68, 0.25);
-  transform: translateY(-2px) scale(1.05);
-  color: #fecaca;
+.btn-water .btn-icon {
+  font-size: 0.92rem;
 }
 
-.btn-beverage {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  font-size: 1.3rem;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-  backdrop-filter: blur(10px);
+/* Beverage Alternative Buttons (Coffee / Tea) */
+.btn-alt {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--surface-mineral);
+  border: 1px solid var(--border-slate-800);
+  color: var(--text-slate-300);
+  font-size: 0.95rem;
 }
 
-.btn-beverage:hover {
-  background: rgba(255, 255, 255, 0.15);
-  transform: translateY(-2px) scale(1.05);
-  box-shadow: 0 6px 16px rgba(0,0,0,0.3);
-  border-color: rgba(255, 255, 255, 0.25);
-  z-index: 2;
+.btn-alt:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: var(--accent-aqua);
+  transform: translateY(-1px);
+}
+
+.btn-alt:active {
+  transform: translateY(0) scale(0.95);
+}
+
+/* Skip Button */
+.btn-skip {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--text-slate-500);
+}
+
+.btn-skip:hover {
+  background: rgba(239, 68, 68, 0.15);
+  color: #F87171;
+  transform: scale(1.05);
+}
+
+.btn-skip:active {
+  transform: scale(0.95);
 }
