@@ -83,10 +83,55 @@ function App() {
   const [loginError, setLoginError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Dynamic feature entitlements from server
+  const [entitlements, setEntitlements] = useState({
+    isPro: false,
+    plan: 'Free',
+    allowedFeatureIds: [
+      'tray_companion',
+      'biometrics_goal',
+      'offline_sqlite_vault',
+      'standard_reminder_cycles',
+      'adaptive_sip_pacing',
+      'custom_icelandic_chimes',
+      'quiet_hours_dnd',
+      'cloud_multi_device_sync',
+      'perpetual_analytics_history',
+      'data_export_csv'
+    ]
+  });
+
+  const fetchEntitlements = async (token) => {
+    try {
+      const headers = {};
+      const authToken = token || settings.userToken;
+      if (authToken) {
+        headers['Authorization'] = `Bearer ${authToken}`;
+      }
+      const res = await fetch('http://localhost:5000/api/admin/entitlements', { headers });
+      if (res.ok) {
+        const data = await res.json();
+        setEntitlements(data);
+      }
+    } catch (e) {
+      console.log('Entitlements fetch failed', e);
+    }
+  };
+
+  const isFeatureAllowed = (featureId) => {
+    if (entitlements.isPro) return true;
+    if (Array.isArray(entitlements.allowedFeatureIds) && entitlements.allowedFeatureIds.includes(featureId)) {
+      return true;
+    }
+    return false;
+  };
+
   // Onboarding wizard step
   const [onboardingStep, setOnboardingStep] = useState(1);
 
   useEffect(() => {
+    fetchEntitlements(settings.userToken);
+
     if (window.electronAPI) {
       window.electronAPI.getSettings().then(s => {
         if (s) {
@@ -103,6 +148,9 @@ function App() {
             notificationTheme: s.notificationTheme || 'oceanic',
             notificationPosition: s.notificationPosition || 'bottom-right'
           }));
+          if (s.userToken) {
+            fetchEntitlements(s.userToken);
+          }
           if (s.manualSipMl) {
             setCustomMlInput(s.manualSipMl.toString());
           }
@@ -235,6 +283,7 @@ function App() {
         if (window.electronAPI) {
           await window.electronAPI.setAuthToken(data.token);
         }
+        fetchEntitlements(data.token);
       } else {
         setLoginError(data.error || 'Invalid email or password.');
       }
@@ -293,6 +342,7 @@ function App() {
         await window.electronAPI.saveLogs(deduped);
       }
     }
+    fetchEntitlements(null);
   };
 
   const handleFinishOnboarding = async () => {
@@ -348,6 +398,13 @@ function App() {
 
   const handleSyncNow = async () => {
     if (!window.electronAPI || !window.electronAPI.syncNow) return;
+
+    if (!isFeatureAllowed('cloud_multi_device_sync')) {
+      setSyncNotice('🔒 Cloud Sync is restricted on the Community Free tier by the owner. Your data remains safe in your Local SQLite Vault.');
+      setTimeout(() => setSyncNotice(''), 4500);
+      return;
+    }
+
     setIsSyncing(true);
     setSyncNotice('Connecting to Water Buddy Cloud...');
 
@@ -363,6 +420,8 @@ function App() {
       } else {
         if (res?.reason === 'unauthenticated') {
           setSyncNotice('⚠️ Offline mode: Sign in to sync with cloud.');
+        } else if (res?.code === 'FEATURE_LOCKED' || res?.error?.includes('restricted')) {
+          setSyncNotice('🔒 Cloud Sync is restricted on the Free plan by the owner.');
         } else {
           setSyncNotice('⚠️ Sync failed: Backend unreachable.');
         }
@@ -387,7 +446,48 @@ function App() {
     playChimeByName(tone, settings.chimeVolume);
   };
 
+  const handleSelectChime = (chimeId) => {
+    if (chimeId !== 'basalt' && !isFeatureAllowed('custom_icelandic_chimes')) {
+      handlePreviewChime(chimeId);
+      setSyncNotice('🔒 Icelandic Sound Library is a Pro perk. Upgrade to unlock all acoustic chimes!');
+      setTimeout(() => setSyncNotice(''), 4000);
+      return;
+    }
+    handleSave({ ...settings, chimeTone: chimeId });
+    handlePreviewChime(chimeId);
+  };
+
+  const handleExportCsv = () => {
+    if (!isFeatureAllowed('data_export_csv')) {
+      setSyncNotice('🔒 Telemetry CSV Export is a Pro perk. Upgrade to unlock data export!');
+      setTimeout(() => setSyncNotice(''), 4000);
+      return;
+    }
+
+    const csvHeader = 'Timestamp,AmountMl,Response,Beverage\n';
+    const rows = logs
+      .map(l => `"${l.timestamp}","${l.amount || 0}","${l.response || 'yes'}","${l.beverageType || 'water'}"`)
+      .join('\n');
+    const blob = new Blob([csvHeader + rows], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `water-buddy-logs-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(a);
+    setSyncNotice('✓ Telemetry records exported to CSV!');
+    setTimeout(() => setSyncNotice(''), 3000);
+  };
+
   const openWebPortal = () => {
+    if (window.electronAPI && window.electronAPI.openExternal) {
+      window.electronAPI.openExternal('http://localhost:3000');
+    } else {
+      window.open('http://localhost:3000', '_blank');
+    }
+  };
+
+  const openWebPricing = () => {
     if (window.electronAPI && window.electronAPI.openExternal) {
       window.electronAPI.openExternal('http://localhost:3000');
     } else {
@@ -792,7 +892,15 @@ function App() {
           </div>
           <div className="brand-meta">
             <h2>Water Buddy</h2>
-            <span className="brand-badge">Desktop Companion</span>
+            <div className="flex items-center gap-1.5 mt-0.5">
+              <span 
+                className={`brand-badge cursor-pointer ${entitlements.isPro ? 'pro-badge' : ''}`}
+                onClick={openWebPricing}
+                title="Click to view pricing perks"
+              >
+                {entitlements.isPro ? '⭐ Pro Lifetime' : '💧 Community Free'}
+              </span>
+            </div>
           </div>
         </div>
 
@@ -1170,39 +1278,50 @@ function App() {
                     <div className="chime-suite-container fade-in">
                       <div className="chime-tones-grid">
                         {[
-                          { id: 'icelandic', name: 'Icelandic Rain', desc: '432Hz Mineral sine shimmer', icon: '🌊' },
-                          { id: 'basalt', name: 'Basalt Drop', desc: 'Resonant water drop plunge', icon: '💧' },
-                          { id: 'ripple', name: 'Ocean Ripple', desc: 'Aqua bubbling chord arpeggio', icon: '🫧' },
-                          { id: 'bowl', name: 'Zen Singing Bowl', desc: '528Hz Meditative sustain', icon: '🎐' }
-                        ].map(chime => (
-                          <div 
-                            key={chime.id}
-                            className={`chime-card ${settings.chimeTone === chime.id ? 'active' : ''}`}
-                            onClick={() => {
-                              handleSave({ ...settings, chimeTone: chime.id });
-                              handlePreviewChime(chime.id);
-                            }}
-                          >
-                            <div className="chime-card-left">
-                              <span className="chime-icon">{chime.icon}</span>
-                              <div>
-                                <span className="chime-name">{chime.name}</span>
-                                <span className="chime-desc">{chime.desc}</span>
-                              </div>
-                            </div>
-                            <button
-                              type="button"
-                              className="btn-chime-play"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handlePreviewChime(chime.id);
-                              }}
-                              title="Play preview sound"
+                          { id: 'basalt', name: 'Basalt Drop', desc: 'Resonant water drop plunge (Standard)', icon: '💧', pro: false },
+                          { id: 'icelandic', name: 'Icelandic Rain', desc: '432Hz Mineral sine shimmer', icon: '🌊', pro: true },
+                          { id: 'ripple', name: 'Ocean Ripple', desc: 'Aqua bubbling chord arpeggio', icon: '🫧', pro: true },
+                          { id: 'bowl', name: 'Zen Singing Bowl', desc: '528Hz Meditative sustain', icon: '🎐', pro: true }
+                        ].map(chime => {
+                          const isLocked = chime.pro && !isFeatureAllowed('custom_icelandic_chimes');
+                          return (
+                            <div 
+                              key={chime.id}
+                              className={`chime-card ${settings.chimeTone === chime.id ? 'active' : ''} ${isLocked ? 'locked-chime opacity-80' : ''}`}
+                              onClick={() => handleSelectChime(chime.id)}
                             >
-                              ▶ Play
-                            </button>
-                          </div>
-                        ))}
+                              <div className="chime-card-left">
+                                <span className="chime-icon">{chime.icon}</span>
+                                <div>
+                                  <div className="flex items-center gap-1.5">
+                                    <span className="chime-name">{chime.name}</span>
+                                    {isLocked && (
+                                      <span 
+                                        className="text-[9px] font-mono px-1.5 py-0.2 rounded bg-amber-400/15 text-amber-300 border border-amber-400/20 font-bold uppercase cursor-pointer"
+                                        onClick={(e) => { e.stopPropagation(); openWebPricing(); }}
+                                        title="Click to view license perks"
+                                      >
+                                        🔒 Pro Perk
+                                      </span>
+                                    )}
+                                  </div>
+                                  <span className="chime-desc">{chime.desc}</span>
+                                </div>
+                              </div>
+                              <button
+                                type="button"
+                                className="btn-chime-play"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handlePreviewChime(chime.id);
+                                }}
+                                title="Play preview sound"
+                              >
+                                ▶ Play
+                              </button>
+                            </div>
+                          );
+                        })}
                       </div>
 
                       {/* Volume Slider */}
@@ -1413,16 +1532,26 @@ function App() {
                       <h4 className="card-title">Recent Drinks Today</h4>
                       <p className="card-subtext">{todayLogs.length} total entries recorded today</p>
                     </div>
-                    {todayLogs.length > 1 && (
+                    <div className="flex items-center gap-2">
                       <button
                         type="button"
-                        className="btn-clean-duplicates"
-                        onClick={handleCleanDuplicates}
-                        title="Remove any identical rapid entries"
+                        className={`btn-clean-duplicates ${!isFeatureAllowed('data_export_csv') ? 'opacity-80' : ''}`}
+                        onClick={handleExportCsv}
+                        title={isFeatureAllowed('data_export_csv') ? 'Export telemetry to CSV' : '🔒 Pro Perk: CSV Export'}
                       >
-                        🧹 Clean Duplicates
+                        {isFeatureAllowed('data_export_csv') ? '📥 Export CSV' : '🔒 CSV (Pro)'}
                       </button>
-                    )}
+                      {todayLogs.length > 1 && (
+                        <button
+                          type="button"
+                          className="btn-clean-duplicates"
+                          onClick={handleCleanDuplicates}
+                          title="Remove any identical rapid entries"
+                        >
+                          🧹 Clean Duplicates
+                        </button>
+                      )}
+                    </div>
                   </div>
 
                   <div className="logs-list">
@@ -1564,6 +1693,20 @@ function App() {
               <h3>Backup &amp; Cloud Sync</h3>
               <p>Synchronize your hydration history and biometrics with the Water Buddy cloud.</p>
             </div>
+
+            {!isFeatureAllowed('cloud_multi_device_sync') && (
+              <div className="weather-banner glass-card mb-4" style={{ borderColor: 'rgba(245, 158, 11, 0.3)' }}>
+                🔒 <strong>Cloud Sync Restricted on Community Free:</strong> Cross-device cloud synchronization is configured as a Pro perk by the administrator. Your records are safely saved locally on this PC in your Offline SQLite Vault.{' '}
+                <button
+                  type="button"
+                  onClick={openWebPricing}
+                  className="underline text-[#38BDF8] ml-1 font-semibold cursor-pointer"
+                  style={{ background: 'none', border: 'none', padding: 0 }}
+                >
+                  View Lifetime License Perks ↗
+                </button>
+              </div>
+            )}
 
             <div className="dashboard-grid">
               {/* Left Column: Cloud Sync HUD & Controls */}

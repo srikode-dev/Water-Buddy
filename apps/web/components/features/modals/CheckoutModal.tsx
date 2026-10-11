@@ -14,6 +14,20 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose, o
   const [method, setMethod] = useState<'upi' | 'card' | 'netbanking'>('upi');
   const [isCompleted, setIsCompleted] = useState(false);
   const [purchasedKey, setPurchasedKey] = useState<string | null>(null);
+  const [price, setPrice] = useState(899);
+  const [currencySymbol, setCurrencySymbol] = useState('₹');
+
+  React.useEffect(() => {
+    fetch('http://localhost:5000/api/admin/pricing')
+      .then((r) => r.json())
+      .then((d) => {
+        if (d.pricing?.price) {
+          setPrice(d.pricing.price);
+          if (d.pricing.currencySymbol) setCurrencySymbol(d.pricing.currencySymbol);
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   if (!isOpen) return null;
 
@@ -26,6 +40,8 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose, o
     setIsCompleted(true);
     onToast('Payment verified via Razorpay! Lifetime token issued.');
   };
+
+  const totalPayable = Math.round(price * 1.18);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md overflow-y-auto">
@@ -55,10 +71,12 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose, o
             <div className="bg-[#070f19] border border-white/5 rounded-xl p-4 flex justify-between items-center font-mono">
               <div>
                 <span className="text-xs text-slate-400">Total Payable:</span>
-                <div className="text-2xl font-bold text-white">₹1,999 <span className="text-xs font-normal text-slate-400">INR</span></div>
+                <div className="text-2xl font-bold text-white">
+                  {currencySymbol}{totalPayable.toLocaleString()} <span className="text-xs font-normal text-slate-400">INR</span>
+                </div>
               </div>
               <span className="text-[10px] text-emerald-400 px-2 py-1 bg-emerald-400/10 rounded border border-emerald-400/20">
-                GST (18%) Included
+                Base {currencySymbol}{price} + 18% GST
               </span>
             </div>
 

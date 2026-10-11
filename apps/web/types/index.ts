@@ -41,11 +41,14 @@ export interface ProformaData {
 }
 
 export interface WebUser {
-  id: string;
+  id?: string;
+  _id?: string;
   email: string;
   name: string;
   role: 'user' | 'admin';
-  plan: 'Free' | 'Pro Lifetime (₹899)';
+  plan: string;
+  isPro?: boolean;
+  allowedFeatures?: string[];
   onboarding?: {
     age?: number;
     weight?: number;
@@ -59,6 +62,11 @@ export interface WebUser {
   createdAt?: string;
 }
 
+export interface HourlyActivityPoint {
+  label: string;
+  volume: number;
+}
+
 export interface AdminStats {
   totalUsers: number;
   proUsers: number;
@@ -70,14 +78,39 @@ export interface AdminStats {
   totalLitersDrank: string;
   activeHydratorsToday: number;
   totalInquiries: number;
+  hourlyActivity?: HourlyActivityPoint[];
 }
 
 export interface UserInquiry {
-  _id: string;
+  _id?: string;
+  id?: string;
   name: string;
   email: string;
   subject: string;
   message: string;
   status: 'New' | 'In Review' | 'Resolved';
   createdAt: string;
+}
+
+export interface FeatureItem {
+  id: string;
+  name: string;
+  description: string;
+  includedInFree: boolean;
+  includedInPro: boolean;
+  category: string;
+}
+
+export interface PricingConfig {
+  _id?: string;
+  planName: string;
+  editionName: string;
+  freePlanName?: string;
+  price: number;
+  billingInterval?: string;
+  currency: string;
+  currencySymbol: string;
+  gstPercent: number;
+  features: FeatureItem[];
+  updatedAt?: string;
 }

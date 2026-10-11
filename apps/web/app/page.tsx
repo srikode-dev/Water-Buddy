@@ -30,7 +30,12 @@ export default function Home() {
   const [dailyGoal, setDailyGoal] = useState<number>(2800);
   const [mounted, setMounted] = useState(false);
   const [currentUser, setCurrentUser] = useState<WebUser | null>(null);
-  const [authChecking, setAuthChecking] = useState(true);
+  const [authChecking, setAuthChecking] = useState(false);
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
+  const [isTransitioning, setIsTransitioning] = useState(false);
+  const [isLoaderExiting, setIsLoaderExiting] = useState(false);
+  const [loaderMessage, setLoaderMessage] = useState("Synchronizing Hydration Core...");
+  const [loaderSubMessage, setLoaderSubMessage] = useState("Authenticating atmospheric telemetry");
 
   // Modal states
   const [proformaData, setProformaData] = useState<ProformaData | null>(null);
@@ -39,6 +44,35 @@ export default function Home() {
 
   // Toast state
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  // Tab transition metadata
+  const tabMeta: Record<ActiveTab, { title: string; sub: string }> = {
+    landing: { title: "Atmospheric Hydration System", sub: "Navigating to companion cockpit" },
+    architecture: { title: "Silent Electron Architecture", sub: "Loading multi-process technical blueprints" },
+    pricing: { title: "Lifetime License & Perks", sub: "Retrieving perpetual license tiers" },
+    contact: { title: "Engineering Support Desk", sub: "Connecting direct communication channel" },
+    "design-system": { title: "Oceanic Abyssal Kit", sub: "Loading design tokens & components" },
+    auth: { title: "Secure Vault Access", sub: "Preparing cryptographic session" },
+    onboarding: { title: "Biometric Calibration", sub: "Calibrating personalized hydration target" },
+    portal: { title: "Hydration Control Center", sub: "Retrieving synchronized telemetry" },
+    account: { title: "Profile & Preferences", sub: "Loading subscriber credentials" },
+    admin: { title: "Owner Control Center", sub: "Loading analytics & enterprise metrics" },
+  };
+
+  // Initial load smooth transition
+  useEffect(() => {
+    const fadeTimer = setTimeout(() => {
+      setIsLoaderExiting(true);
+    }, 600);
+    const endTimer = setTimeout(() => {
+      setIsInitialLoading(false);
+      setIsLoaderExiting(false);
+    }, 900);
+    return () => {
+      clearTimeout(fadeTimer);
+      clearTimeout(endTimer);
+    };
+  }, []);
 
   // Hydrate from localStorage and verify auth token with /api/auth/me
   useEffect(() => {
@@ -57,11 +91,19 @@ export default function Home() {
       return;
     }
 
+    // Token exists; validate credentials with backend
+    setAuthChecking(true);
+
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 2500);
+
     const verifyAuth = async () => {
       try {
         const res = await fetch("http://localhost:5000/api/auth/me", {
-          headers: { Authorization: `Bearer ${token}` }
+          headers: { Authorization: `Bearer ${token}` },
+          signal: controller.signal,
         });
+        clearTimeout(timeoutId);
         if (res.ok) {
           const data = await res.json();
           if (data.user) {
@@ -80,6 +122,7 @@ export default function Home() {
           setActiveTab("landing");
         }
       } catch (err) {
+        clearTimeout(timeoutId);
         // Offline fallback
         if (savedUserStr) {
           try {
@@ -96,6 +139,11 @@ export default function Home() {
     };
 
     verifyAuth();
+
+    return () => {
+      clearTimeout(timeoutId);
+      controller.abort();
+    };
   }, []);
 
   // Sync state to localStorage
@@ -111,16 +159,19 @@ export default function Home() {
     }
   }, [dailyGoal, mounted]);
 
-  // GSAP smooth cinematic transition whenever tab switches
+  // GSAP smooth cinematic transition whenever tab switches and main content is present
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      gsap.fromTo(
-        "#main-content",
-        { opacity: 0, y: 16, filter: "blur(6px)" },
-        { opacity: 1, y: 0, filter: "blur(0px)", duration: 0.5, ease: "power2.out" }
-      );
-    }
-  }, [activeTab]);
+    if (typeof window === "undefined" || !mounted || authChecking || isInitialLoading || isTransitioning) return;
+
+    const mainEl = document.getElementById("main-content");
+    if (!mainEl) return;
+
+    gsap.fromTo(
+      mainEl,
+      { opacity: 0, y: 16, filter: "blur(6px)" },
+      { opacity: 1, y: 0, filter: "blur(0px)", duration: 0.45, ease: "power2.out" }
+    );
+  }, [activeTab, mounted, authChecking, isInitialLoading, isTransitioning]);
 
   const showToast = (msg: string) => {
     setToastMessage(msg);
@@ -135,16 +186,38 @@ export default function Home() {
     }
   }, [toastMessage]);
 
-  const handleTabChange = (tab: ActiveTab) => {
-    setActiveTab(tab);
+  const handleTabChange = (newTab: ActiveTab) => {
+    if (newTab === activeTab) return;
+
+    const meta = tabMeta[newTab] || { title: "Water Buddy", sub: "Loading view..." };
+    setLoaderMessage(meta.title);
+    setLoaderSubMessage(meta.sub);
+    setIsTransitioning(true);
+    setIsLoaderExiting(false);
+
     if (typeof window !== "undefined") {
       if (window.__lenis) {
-        window.__lenis.scrollTo(0, { immediate: false, duration: 0.6 });
-        setTimeout(() => window.__lenis?.resize(), 50);
+        window.__lenis.scrollTo(0, { immediate: true });
       } else {
-        window.scrollTo({ top: 0, behavior: "smooth" });
+        window.scrollTo({ top: 0, behavior: "instant" });
       }
     }
+
+    // Switch view underneath fluid overlay at 180ms
+    setTimeout(() => {
+      setActiveTab(newTab);
+    }, 180);
+
+    // Fade out loader smoothly at 420ms
+    setTimeout(() => {
+      setIsLoaderExiting(true);
+    }, 420);
+
+    // Unmount transition overlay at 640ms
+    setTimeout(() => {
+      setIsTransitioning(false);
+      setIsLoaderExiting(false);
+    }, 640);
   };
 
   const handleLogWater = (amount: number, label: string) => {
@@ -177,22 +250,24 @@ export default function Home() {
     showToast("Signed out successfully.");
   };
 
-  // Global Water Droplet Filling Loader while checking auth
-  if (authChecking) {
-    return (
-      <WaterDropletLoader
-        message="Restoring Hydration Session..."
-        subMessage="Validating credentials with secure vault"
-      />
-    );
-  }
+  // Reusable Water Droplet Loader Overlay
+  const isLoaderVisible = mounted && (isInitialLoading || authChecking || isTransitioning);
+  const loaderOverlay = isLoaderVisible ? (
+    <WaterDropletLoader
+      message={loaderMessage}
+      subMessage={loaderSubMessage}
+      isTransition={isTransitioning}
+      isExiting={isLoaderExiting}
+    />
+  ) : null;
 
   // Standalone Full-Screen Portal Mode (Zero traces of landing page)
   const isPortalMode = (activeTab === "portal" || activeTab === "account" || activeTab === "admin") && !!currentUser;
 
   if (isPortalMode && currentUser) {
     return (
-      <div className="w-full min-h-screen bg-[#070f19] text-[#e2e8f0] selection:bg-[#38bdf8]/30 selection:text-[#38bdf8]">
+      <div className="w-full min-h-screen bg-[#070f19] text-[#e2e8f0] selection:bg-[#38bdf8]/30 selection:text-[#38bdf8] relative">
+        {loaderOverlay}
         <PortalView
           user={currentUser}
           initialMode={activeTab === "admin" && currentUser.role === "admin" ? "owner" : undefined}
@@ -227,7 +302,8 @@ export default function Home() {
   // Standalone Full-Screen Onboarding Mode
   if (activeTab === "onboarding" && currentUser) {
     return (
-      <div className="w-full min-h-screen bg-[#070f19] text-[#e2e8f0] selection:bg-[#38bdf8]/30 selection:text-[#38bdf8] flex flex-col justify-center items-center p-4 sm:p-8">
+      <div className="w-full min-h-screen bg-[#070f19] text-[#e2e8f0] selection:bg-[#38bdf8]/30 selection:text-[#38bdf8] flex flex-col justify-center items-center p-4 sm:p-8 relative">
+        {loaderOverlay}
         <div className="max-w-4xl w-full">
           <WebOnboardingView
             user={currentUser}
@@ -247,6 +323,7 @@ export default function Home() {
   return (
     <SmoothScroll>
       <div className="min-h-screen bg-[#070f19] text-[#e2e8f0] flex flex-col justify-between selection:bg-[#38bdf8]/30 selection:text-[#38bdf8] film-grain relative">
+        {loaderOverlay}
         {/* Top Floating Glassmorphism Navigation with Location Clock */}
         <Navigation
           activeTab={activeTab}

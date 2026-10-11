@@ -1,6 +1,7 @@
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { User, WidgetSettings } from '../models/index.js';
+import { getUserAllowedFeatures } from '../utils/entitlements.js';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'super-secret-water-buddy';
 
@@ -49,6 +50,8 @@ export const registerUser = async (req, res) => {
     await widgetSettings.save();
 
     const token = jwt.sign({ userId: user._id, role: user.role }, JWT_SECRET, { expiresIn: '30d' });
+    const allowedFeatures = await getUserAllowedFeatures(user);
+    const isPro = user.role === 'admin' || Boolean(user.plan && user.plan.toLowerCase().includes('pro'));
 
     res.status(201).json({
       message: 'Account created successfully',
@@ -59,6 +62,8 @@ export const registerUser = async (req, res) => {
         name: user.name,
         role: user.role,
         plan: user.plan,
+        isPro,
+        allowedFeatures,
         onboarding: user.onboarding
       }
     });
@@ -83,6 +88,8 @@ export const loginUser = async (req, res) => {
     if (!valid) return res.status(400).json({ error: 'Invalid email or password' });
 
     const token = jwt.sign({ userId: user._id, role: user.role }, JWT_SECRET, { expiresIn: '30d' });
+    const allowedFeatures = await getUserAllowedFeatures(user);
+    const isPro = user.role === 'admin' || Boolean(user.plan && user.plan.toLowerCase().includes('pro'));
 
     res.json({
       token,
@@ -92,6 +99,8 @@ export const loginUser = async (req, res) => {
         name: user.name,
         role: user.role,
         plan: user.plan,
+        isPro,
+        allowedFeatures,
         onboarding: user.onboarding,
         createdAt: user.createdAt
       }
@@ -111,6 +120,9 @@ export const getMe = async (req, res) => {
     const user = await User.findById(decoded.userId).select('-passwordHash');
     if (!user) return res.status(404).json({ error: 'User not found' });
 
+    const allowedFeatures = await getUserAllowedFeatures(user);
+    const isPro = user.role === 'admin' || Boolean(user.plan && user.plan.toLowerCase().includes('pro'));
+
     res.json({
       user: {
         id: user._id,
@@ -118,6 +130,8 @@ export const getMe = async (req, res) => {
         name: user.name,
         role: user.role,
         plan: user.plan,
+        isPro,
+        allowedFeatures,
         onboarding: user.onboarding,
         createdAt: user.createdAt
       }
@@ -143,7 +157,23 @@ export const updateProfile = async (req, res) => {
     if (onboarding) user.onboarding = { ...user.onboarding, ...onboarding };
 
     await user.save();
-    res.json({ message: 'Profile updated', user });
+    const allowedFeatures = await getUserAllowedFeatures(user);
+    const isPro = user.role === 'admin' || Boolean(user.plan && user.plan.toLowerCase().includes('pro'));
+
+    res.json({
+      message: 'Profile updated',
+      user: {
+        id: user._id,
+        email: user.email,
+        name: user.name,
+        role: user.role,
+        plan: user.plan,
+        isPro,
+        allowedFeatures,
+        onboarding: user.onboarding,
+        createdAt: user.createdAt
+      }
+    });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

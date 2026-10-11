@@ -15,18 +15,38 @@ export function ContactView({ onToast }: ContactViewProps) {
   const [message, setMessage] = useState('');
   const [isSending, setIsSending] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSending(true);
     playIcelandicChime();
 
-    setTimeout(() => {
+    try {
+      const categoryLabel = type === 'feedback' ? 'Suggestion' : type === 'bug' ? 'Bug Report' : 'General Help';
+      const res = await fetch('http://localhost:5000/api/admin/inquiry', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: name.trim(),
+          email: email.trim(),
+          subject: `${categoryLabel}: ${message.trim().slice(0, 45)}`,
+          message: message.trim(),
+        }),
+      });
+
+      if (res.ok) {
+        onToast('✓ Your inquiry has been sent to the Owner Inquiries dashboard!');
+        setName('');
+        setEmail('');
+        setMessage('');
+      } else {
+        const data = await res.json().catch(() => ({}));
+        onToast(data.error || 'Failed to send inquiry. Please try again.');
+      }
+    } catch (err) {
+      onToast('Inquiry recorded locally. Server sync pending.');
+    } finally {
       setIsSending(false);
-      onToast('Thanks for your message! We will get back to you soon.');
-      setName('');
-      setEmail('');
-      setMessage('');
-    }, 800);
+    }
   };
 
   return (

@@ -13,14 +13,16 @@ export function TextManifesto() {
     gsap.registerPlugin(ScrollTrigger);
 
     const el = textRef.current;
-    if (!el) return;
+    const container = containerRef.current;
+    if (!el || !container) return;
 
     const words = el.querySelectorAll(".manifesto-word");
+    if (!words || words.length === 0) return;
 
     // Word by word illumination as the user scrolls through
     const tl = gsap.timeline({
       scrollTrigger: {
-        trigger: containerRef.current,
+        trigger: container,
         start: "top 75%",
         end: "bottom 45%",
         scrub: 0.8,
@@ -38,7 +40,7 @@ export function TextManifesto() {
     return () => {
       tl.kill();
       ScrollTrigger.getAll().forEach((st) => {
-        if (st.vars.trigger === containerRef.current) st.kill();
+        if (st.vars.trigger === container) st.kill();
       });
     };
   }, []);
