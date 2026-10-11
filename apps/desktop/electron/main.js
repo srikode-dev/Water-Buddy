@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain, screen, Notification } from 'electron';
+import { app, BrowserWindow, ipcMain, screen, Notification, shell } from 'electron';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { startScheduler } from './scheduler.js';
@@ -12,6 +12,30 @@ const isDev = process.env.NODE_ENV === 'development';
 let settingsWindow;
 let overlayWindow;
 let tray;
+
+function getOverlayPosition(pos = 'bottom-right') {
+  const primaryDisplay = screen.getPrimaryDisplay();
+  const { x, y, width, height } = primaryDisplay.workArea;
+
+  const overlayWidth = 470;
+  const overlayHeight = 90;
+
+  let posX = x + width - overlayWidth - 24;
+  let posY = y + height - overlayHeight - 16;
+
+  if (pos === 'bottom-left') {
+    posX = x + 24;
+    posY = y + height - overlayHeight - 16;
+  } else if (pos === 'top-right') {
+    posX = x + width - overlayWidth - 24;
+    posY = y + 24;
+  } else if (pos === 'bottom-center') {
+    posX = Math.round(x + (width - overlayWidth) / 2);
+    posY = y + height - overlayHeight - 20;
+  }
+
+  return { posX, posY, overlayWidth, overlayHeight };
+}
 
 function triggerNotification() {
   const settings = store.get('settings') || {};
@@ -41,6 +65,8 @@ function triggerNotification() {
 
   // 2. Interactive Desktop HUD Overlay Widget
   if (overlayWindow && !overlayWindow.isDestroyed()) {
+    const { posX, posY, overlayWidth, overlayHeight } = getOverlayPosition(settings.notificationPosition);
+    overlayWindow.setBounds({ x: posX, y: posY, width: overlayWidth, height: overlayHeight });
     overlayWindow.show();
     overlayWindow.setAlwaysOnTop(true, 'floating');
     overlayWindow.moveTop();
@@ -49,18 +75,14 @@ function triggerNotification() {
 }
 
 function createWindows() {
-  const primaryDisplay = screen.getPrimaryDisplay();
-  const { x, y, width, height } = primaryDisplay.workArea;
+  const settings = store.get('settings') || {};
+  const { posX, posY, overlayWidth, overlayHeight } = getOverlayPosition(settings.notificationPosition);
 
-  const overlayWidth = 470;
-  const overlayHeight = 90;
-
-  // Position at Bottom-Right corner (above the Windows system tray & clock)
   overlayWindow = new BrowserWindow({
     width: overlayWidth,
     height: overlayHeight,
-    x: x + width - overlayWidth - 24,
-    y: y + height - overlayHeight - 16,
+    x: posX,
+    y: posY,
     transparent: true,
     frame: false,
     show: false,
@@ -79,10 +101,10 @@ function createWindows() {
   const iconPath = path.join(__dirname, '../public/icon.png');
 
   settingsWindow = new BrowserWindow({
-    width: 900,
-    height: 660,
-    minWidth: 780,
-    minHeight: 560,
+    width: 920,
+    height: 680,
+    minWidth: 800,
+    minHeight: 580,
     backgroundColor: '#070F19',
     icon: iconPath,
     title: 'Water Buddy',
@@ -139,18 +161,32 @@ app.whenReady().then(() => {
     }
   });
 
+  ipcMain.on('open-external', (event, url) => {
+    if (url) {
+      shell.openExternal(url);
+    }
+  });
+
   ipcMain.handle('get-settings', () => store.get('settings'));
-  ipcMain.handle('save-settings', (event, settings) => {
-    store.set('settings', settings);
+  ipcMain.handle('save-settings', (event, newSettings) => {
+    store.set('settings', newSettings);
+    // If notification position changed, update overlay window bounds
+    if (overlayWindow && !overlayWindow.isDestroyed() && newSettings.notificationPosition) {
+      const { posX, posY, overlayWidth, overlayHeight } = getOverlayPosition(newSettings.notificationPosition);
+      overlayWindow.setBounds({ x: posX, y: posY, width: overlayWidth, height: overlayHeight });
+    }
     startScheduler(() => triggerNotification());
   });
 
   ipcMain.handle('get-logs', () => store.get('logs') || []);
+  ipcMain.handle('save-logs', (event, logs) => store.set('logs', logs));
+  ipcMain.handle('get-guest-logs', () => store.get('guest_logs') || []);
+  ipcMain.handle('save-guest-logs', (event, logs) => store.set('guest_logs', logs));
   ipcMain.handle('get-auth-token', () => store.get('authToken'));
   ipcMain.handle('set-auth-token', (event, token) => store.set('authToken', token));
+  ipcMain.handle('clear-auth', () => store.set('authToken', null));
 
   ipcMain.on('log-water', (event, data) => {
-    console.log('Water logged:', data);
     const logs = store.get('logs') || [];
     const newLog = {
       id: Date.now().toString(),

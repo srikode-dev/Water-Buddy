@@ -31,7 +31,7 @@ export function ArchitectureView({
   };
 
   return (
-    <div className="space-y-16 pb-20 pt-6 max-w-5xl mx-auto">
+    <div className="space-y-16 pb-20 pt-3 sm:pt-4 max-w-5xl mx-auto">
       {/* 1. Header */}
       <div className="text-center max-w-2xl mx-auto space-y-3">
         <div className="inline-flex items-center gap-2 rounded-full border border-sky-400/20 bg-[#0C141F]/80 px-3.5 py-1 text-xs font-mono text-[#38BDF8] shadow-inner">
@@ -102,18 +102,18 @@ export function ArchitectureView({
         ))}
       </div>
 
-      {/* 4. Smart Adaptive Pacing (Human-Friendly Interactive Demo) */}
+      {/* 4. Desktop Companion Core Engine Architecture */}
       <div className="frosted-glass rounded-3xl p-6 sm:p-8 border border-white/10 space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <span className="text-xs font-mono text-[#38BDF8] uppercase tracking-wider font-semibold">
-              SMART ADAPTIVE PACING
+              DESKTOP COMPANION ARCHITECTURE
             </span>
             <h3 className="text-xl font-semibold text-white mt-1">
-              Never feel pressured to chug water
+              Engineered for Windows 11 &amp; zero desktop distractions
             </h3>
             <p className="text-xs sm:text-sm text-slate-300 mt-1">
-              If you miss a reminder during a busy call, Water Buddy automatically splits your remaining water into easy, comfortable sips for the afternoon.
+              Water Buddy operates as a native Win32 background service with transparent floating overlays and offline-first encryption.
             </p>
           </div>
 
@@ -122,58 +122,33 @@ export function ArchitectureView({
             className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 hover:bg-white/20 text-white text-xs font-mono transition-all shrink-0 cursor-pointer"
           >
             <Volume2 className="w-3.5 h-3.5 text-[#38BDF8]" />
-            <span>Test Sound Chime</span>
+            <span>Test Chime Sound</span>
           </button>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="space-y-2 bg-[#070F19]/60 p-4 rounded-xl border border-white/5">
-            <div className="flex justify-between text-xs font-mono">
-              <span className="text-slate-400">Drank So Far</span>
-              <span className="text-[#38BDF8] font-bold">{consumed} ml</span>
-            </div>
-            <input
-              type="range"
-              min="0"
-              max={dailyGoal}
-              step="100"
-              value={consumed}
-              onChange={(e) => setConsumed(Number(e.target.value))}
-              className="w-full cursor-pointer"
-            />
-            <div className="text-[10px] text-slate-500 font-mono">
-              Drag to test different intake levels
-            </div>
+          <div className="bg-[#070F19]/60 p-5 rounded-2xl border border-white/5 space-y-2">
+            <div className="text-xs font-mono text-[#38BDF8] font-bold">01 · FLOATING HUD POPUP</div>
+            <h4 className="text-white text-sm font-semibold">Customizable Themes &amp; Position</h4>
+            <p className="text-xs text-slate-400 leading-relaxed">
+              4 distinct visual themes (Oceanic, Emerald, Obsidian, Neon) positioned in any of the 4 screen corners (above clock, bottom-left, top-right, or bottom-center).
+            </p>
           </div>
 
-          <div className="space-y-2 bg-[#070F19]/60 p-4 rounded-xl border border-white/5">
-            <div className="flex justify-between text-xs font-mono">
-              <span className="text-slate-400">Work Hours Left</span>
-              <span className="text-[#38BDF8] font-bold">{hoursLeft} Hours</span>
-            </div>
-            <input
-              type="range"
-              min="1"
-              max="10"
-              value={hoursLeft}
-              onChange={(e) => setHoursLeft(Number(e.target.value))}
-              className="w-full cursor-pointer"
-            />
-            <div className="text-[10px] text-slate-500 font-mono">
-              Recalculates based on your remaining workday
-            </div>
+          <div className="bg-[#070F19]/60 p-5 rounded-2xl border border-white/5 space-y-2">
+            <div className="text-xs font-mono text-[#34D399] font-bold">02 · SYSTEM TRAY COMPANION</div>
+            <h4 className="text-white text-sm font-semibold">One-Click Taskbar Menu</h4>
+            <p className="text-xs text-slate-400 leading-relaxed">
+              Quietly sits in your Windows system tray. Access today's progress ring, log +150ml, +250ml, coffee, or tea in a single click without opening bulky windows.
+            </p>
           </div>
 
-          <div className="bg-[#070F19] p-4 rounded-xl border border-[#38BDF8]/30 flex flex-col justify-center items-center text-center shadow-lg">
-            <span className="text-[10px] font-mono text-slate-400 uppercase tracking-wider">
-              SUGGESTED NEXT SIP
-            </span>
-            <div className="text-3xl font-bold text-[#38BDF8] font-mono mt-0.5">
-              {suggestedSip} ml
-            </div>
-            <span className="text-[11px] text-slate-400 font-mono mt-1">
-              Spread over {remindersRemaining} remaining gentle walk-ins
-            </span>
+          <div className="bg-[#070F19]/60 p-5 rounded-2xl border border-white/5 space-y-2">
+            <div className="text-xs font-mono text-purple-400 font-bold">03 · OFFLINE FIRST &amp; PRO SYNC</div>
+            <h4 className="text-white text-sm font-semibold">Private Local Storage + Cloud Hub</h4>
+            <p className="text-xs text-slate-400 leading-relaxed">
+              Track 100% offline in Guest Mode without ever creating an account. Upgrade to Pro Lifetime (₹899) anytime to backup and sync across devices.
+            </p>
           </div>
         </div>
       </div>

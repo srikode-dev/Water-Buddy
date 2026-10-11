@@ -8,6 +8,7 @@ function App() {
   const [dailyGoal, setDailyGoal] = useState(2500);
   const [sipAmount, setSipAmount] = useState(150);
   const [soundEnabled, setSoundEnabled] = useState(true);
+  const [theme, setTheme] = useState('oceanic'); // 'oceanic' | 'emerald' | 'obsidian' | 'neon'
   const [hasAnswered, setHasAnswered] = useState(false);
   const [feedbackText, setFeedbackText] = useState('');
   const autoHideTimerRef = useRef(null);
@@ -40,10 +41,12 @@ function App() {
       const goal = settings.dailyGoal || 2450;
       const cup = settings.manualSipMl || 150;
       const sound = settings.soundOn !== false;
+      const activeTheme = settings.notificationTheme || 'oceanic';
       
       setDailyGoal(goal);
       setSipAmount(cup);
       setSoundEnabled(sound);
+      setTheme(activeTheme);
 
       const todayStr = new Date().toDateString();
       const todayLogs = logs.filter(l => l.response === 'yes' && new Date(l.timestamp).toDateString() === todayStr);
@@ -124,16 +127,42 @@ function App() {
   const circumference = 2 * Math.PI * radius;
   const strokeDashoffset = circumference - (fillLevel / 100) * circumference;
 
+  const getGradientId = () => {
+    if (theme === 'emerald') return 'url(#emeraldGlow)';
+    if (theme === 'obsidian') return 'url(#obsidianGlow)';
+    if (theme === 'neon') return 'url(#neonGlow)';
+    return 'url(#oceanicGlow)';
+  };
+
+  const getIconStroke = () => {
+    if (theme === 'emerald') return '#34D399';
+    if (theme === 'obsidian') return '#FFFFFF';
+    if (theme === 'neon') return '#C084FC';
+    return '#38BDF8';
+  };
+
   return (
     <div className="overlay-container">
-      <div className={`minimal-widget ${isVisible ? 'visible' : 'hidden'}`}>
-        {/* Progress Ring */}
+      <div className={`minimal-widget theme-${theme} ${isVisible ? 'visible' : 'hidden'}`}>
+        {/* Progress Ring with Dynamic Gradients */}
         <div className="widget-progress">
           <svg width="48" height="48" viewBox="0 0 48 48">
             <defs>
               <linearGradient id="oceanicGlow" x1="0%" y1="0%" x2="100%" y2="100%">
                 <stop offset="0%" stopColor="#38BDF8" />
                 <stop offset="100%" stopColor="#0284C7" />
+              </linearGradient>
+              <linearGradient id="emeraldGlow" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor="#34D399" />
+                <stop offset="100%" stopColor="#059669" />
+              </linearGradient>
+              <linearGradient id="obsidianGlow" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor="#FFFFFF" />
+                <stop offset="100%" stopColor="#64748B" />
+              </linearGradient>
+              <linearGradient id="neonGlow" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor="#C084FC" />
+                <stop offset="100%" stopColor="#38BDF8" />
               </linearGradient>
             </defs>
             <circle 
@@ -148,11 +177,12 @@ function App() {
               strokeDasharray={circumference}
               strokeDashoffset={strokeDashoffset}
               strokeLinecap="round"
+              stroke={getGradientId()}
               transform="rotate(-90 24 24)"
             />
           </svg>
           <div className="progress-center-icon">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#38BDF8" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={getIconStroke()} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z" />
             </svg>
           </div>

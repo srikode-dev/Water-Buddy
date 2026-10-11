@@ -94,7 +94,7 @@ export function PricingView({
   ];
 
   return (
-    <div className="space-y-16 pb-20 pt-6 max-w-5xl mx-auto">
+    <div className="space-y-16 pb-20 pt-3 sm:pt-4 max-w-5xl mx-auto">
       {/* 1. Header & Switcher */}
       <div className="flex flex-col items-center text-center space-y-4 max-w-2xl mx-auto">
         <span className="text-xs font-mono text-[#38BDF8] uppercase tracking-wider font-semibold">

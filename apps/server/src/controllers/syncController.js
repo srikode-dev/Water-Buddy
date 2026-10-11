@@ -53,3 +53,14 @@ export const syncData = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+
+export const getUserLogs = async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const logs = await WaterLog.find({ userId }).sort({ timestamp: -1 }).limit(100);
+    const settings = await WidgetSettings.findOne({ userId });
+    res.json({ logs, settings });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};

@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { playBasaltDrop } from '@/utils/audio';
-import { RotateCcw, Plus, Sparkles, Check } from 'lucide-react';
+import { Droplet, RotateCcw, Plus, Check, Sliders } from 'lucide-react';
 
 export interface TrayCompanionProps {
   currentIntake: number;
@@ -20,8 +20,8 @@ export const TrayCompanion: React.FC<TrayCompanionProps> = ({
   onUpdateGoal,
 }) => {
   const [timeString, setTimeString] = useState('');
-  const [minutesRemaining, setMinutesRemaining] = useState(24);
-  const [secondsRemaining, setSecondsRemaining] = useState(0);
+  const [minutesRemaining, setMinutesRemaining] = useState(38);
+  const [secondsRemaining, setSecondsRemaining] = useState(20);
   const [showCustomModal, setShowCustomModal] = useState(false);
   const [customVal, setCustomVal] = useState('200');
   const [editingGoal, setEditingGoal] = useState(false);
@@ -63,7 +63,7 @@ export const TrayCompanion: React.FC<TrayCompanionProps> = ({
     e.preventDefault();
     const val = parseInt(customVal, 10);
     if (!isNaN(val) && val > 0) {
-      handleQuickLog(val, 'Custom Vol');
+      handleQuickLog(val, 'Custom Sip');
       setShowCustomModal(false);
     }
   };
@@ -78,22 +78,24 @@ export const TrayCompanion: React.FC<TrayCompanionProps> = ({
   };
 
   const percent = Math.min(100, Math.round((currentIntake / (dailyGoal || 2800)) * 100));
-  const radius = 54;
+  const radius = 56;
   const circumference = 2 * Math.PI * radius;
   const strokeDashoffset = circumference - (percent / 100) * circumference;
 
   return (
-    <div className="frosted-glass rounded-3xl p-6 sm:p-8 max-w-sm w-full mx-auto shadow-2xl relative overflow-hidden border border-white/10 select-none">
-      {/* Ambient background glow */}
-      <div className="absolute -top-16 -right-16 w-36 h-36 rounded-full bg-[#38bdf8]/15 blur-2xl pointer-events-none" />
+    <div className="bg-[#0C141F] border border-[#1E293B] rounded-3xl p-6 sm:p-7 max-w-sm w-full mx-auto shadow-2xl relative overflow-hidden select-none">
+      {/* Background radial glow */}
+      <div className="absolute -top-16 -right-16 w-40 h-40 rounded-full bg-[#38bdf8]/10 blur-3xl pointer-events-none" />
 
       {/* Header bar */}
       <div className="flex justify-between items-center text-xs font-mono border-b border-white/5 pb-3">
-        <span className="text-[#38BDF8] flex items-center gap-1.5 font-semibold text-[11px]">
-          <span className="w-2 h-2 rounded-full bg-[#34D399] animate-pulse" />
-          INTERACTIVE DEMO
-        </span>
-        <span className="text-white bg-white/5 px-2 py-0.5 rounded border border-white/10 font-medium text-[11px]">
+        <div className="flex items-center gap-2">
+          <div className="w-5 h-5 rounded-md bg-[#38BDF8]/10 border border-[#38BDF8]/20 flex items-center justify-center">
+            <Droplet className="w-3 h-3 text-[#38BDF8]" />
+          </div>
+          <span className="text-white font-semibold text-xs tracking-tight">WIDGET MENU</span>
+        </div>
+        <span className="text-slate-400 bg-white/5 px-2 py-0.5 rounded text-[11px] font-mono border border-white/5">
           {timeString || '12:00 PM'}
         </span>
       </div>
@@ -106,8 +108,8 @@ export const TrayCompanion: React.FC<TrayCompanionProps> = ({
               cx="70"
               cy="70"
               r={radius}
-              className="stroke-[#141f2e]"
-              strokeWidth="10"
+              className="stroke-[#141C27]"
+              strokeWidth="9"
               fill="transparent"
             />
             <circle
@@ -115,7 +117,7 @@ export const TrayCompanion: React.FC<TrayCompanionProps> = ({
               cy="70"
               r={radius}
               className="stroke-[#38bdf8] transition-all duration-700 ease-out"
-              strokeWidth="10"
+              strokeWidth="9"
               strokeDasharray={circumference}
               strokeDashoffset={strokeDashoffset}
               strokeLinecap="round"
@@ -124,159 +126,162 @@ export const TrayCompanion: React.FC<TrayCompanionProps> = ({
           </svg>
 
           <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
-            <span className="text-3xl font-bold tracking-tight text-white font-mono">
+            <span className="text-3xl sm:text-4xl font-bold tracking-tight text-white font-mono">
               {percent}%
             </span>
-            <span className="text-[11px] text-slate-400 font-mono uppercase tracking-wider">
-              {percent >= 100 ? 'Goal Met!' : 'On Track'}
+            <span className="text-[10px] text-slate-400 font-mono uppercase tracking-wider mt-0.5">
+              {percent >= 100 ? 'Goal Reached!' : 'Daily Intake'}
             </span>
           </div>
         </div>
 
         {/* Volume status */}
         <div className="mt-3 text-center">
-          <div className="text-xl font-bold text-white tracking-tight font-mono">
+          <div className="text-2xl font-bold text-white tracking-tight font-mono">
             {currentIntake.toLocaleString()}{' '}
-            <span className="text-xs font-normal text-slate-400">
+            <span className="text-sm font-normal text-slate-400">
               / {dailyGoal.toLocaleString()} ml
             </span>
           </div>
 
-          {editingGoal ? (
-            <form onSubmit={handleSaveGoal} className="flex items-center gap-1.5 mt-2 justify-center">
-              <input
-                type="number"
-                min="500"
-                max="6000"
-                step="50"
-                value={goalInput}
-                onChange={(e) => setGoalInput(e.target.value)}
-                className="w-20 bg-[#070f19] border border-[#38bdf8] rounded px-2 py-0.5 text-xs text-white font-mono text-center focus:outline-none"
-              />
-              <button
-                type="submit"
-                className="p-1 rounded bg-[#38bdf8] text-[#070f19] hover:bg-sky-400"
-              >
-                <Check className="w-3.5 h-3.5" />
-              </button>
-            </form>
-          ) : (
+          {!editingGoal ? (
             <button
-              onClick={() => {
-                setGoalInput(String(dailyGoal));
-                setEditingGoal(true);
-              }}
-              className="text-[11px] text-slate-400 hover:text-[#38bdf8] underline decoration-dotted mt-1 transition-colors block mx-auto cursor-pointer"
+              onClick={() => setEditingGoal(true)}
+              className="text-[11px] text-[#38bdf8] hover:underline mt-1 font-mono cursor-pointer"
             >
               Change daily target
             </button>
+          ) : (
+            <form onSubmit={handleSaveGoal} className="flex items-center gap-1.5 mt-2 justify-center">
+              <input
+                type="number"
+                value={goalInput}
+                onChange={(e) => setGoalInput(e.target.value)}
+                className="w-20 bg-[#070F19] text-white px-2 py-1 rounded text-xs font-mono border border-white/20 text-center"
+              />
+              <button
+                type="submit"
+                className="px-2 py-1 bg-[#38bdf8] text-[#070F19] rounded text-[11px] font-bold"
+              >
+                Save
+              </button>
+            </form>
           )}
         </div>
       </div>
 
-      {/* Interval Nudge Box */}
-      <div className="bg-[#070f19]/70 border border-white/5 rounded-2xl p-3.5 mb-4 flex items-center justify-between text-xs font-mono">
+      {/* Next reminder countdown card */}
+      <div className="bg-[#070F19]/80 rounded-2xl p-3 border border-white/5 flex items-center justify-between text-xs font-mono mb-4">
         <div>
-          <span className="text-slate-400 block text-[10px] uppercase">NEXT REMINDER IN</span>
-          <span className="text-[#38bdf8] font-semibold text-sm">
-            {minutesRemaining}m {String(secondsRemaining).padStart(2, '0')}s
+          <span className="text-[10px] text-slate-400 uppercase tracking-wider block">
+            NEXT REMINDER IN
+          </span>
+          <span className="text-sm font-bold text-[#38BDF8]">
+            {minutesRemaining}m {secondsRemaining.toString().padStart(2, '0')}s
           </span>
         </div>
         <div className="text-right">
-          <span className="text-slate-500 text-[10px] block">INTERVAL</span>
-          <span className="text-slate-300">Every 45 Min</span>
+          <span className="text-[10px] text-slate-400 uppercase tracking-wider block">
+            INTERVAL
+          </span>
+          <span className="text-slate-300 font-semibold">Every 45 Min</span>
         </div>
       </div>
 
-      {/* Quick Sip Log Actions */}
+      {/* Quick drink pills */}
       <div className="space-y-2">
-        <div className="flex justify-between items-center text-[11px] font-mono text-slate-400">
-          <span className="uppercase tracking-wider">Try Logging Water:</span>
-          <span className="text-[#38bdf8]">Click to test</span>
-        </div>
+        <span className="text-[10px] font-mono text-slate-400 uppercase tracking-wider block">
+          One-Click Quick Drink:
+        </span>
         <div className="grid grid-cols-3 gap-2">
           <button
-            onClick={() => handleQuickLog(150, 'Small Sip')}
-            className="frosted-pill py-2 rounded-xl text-xs font-semibold text-slate-200 hover:text-white hover:border-[#38bdf8] hover:bg-[#38bdf8]/10 transition-all font-mono cursor-pointer active:scale-95"
+            onClick={() => handleQuickLog(150, 'Cup (+150ml)')}
+            className="py-2 px-1 rounded-xl bg-white/5 hover:bg-[#38BDF8]/20 border border-white/10 hover:border-[#38BDF8]/40 text-xs font-mono text-white transition-all font-bold cursor-pointer"
           >
             +150ml
           </button>
           <button
-            onClick={() => handleQuickLog(250, 'Glass of Water')}
-            className="frosted-pill py-2 rounded-xl text-xs font-semibold text-slate-200 hover:text-white hover:border-[#38bdf8] hover:bg-[#38bdf8]/10 transition-all font-mono cursor-pointer active:scale-95"
+            onClick={() => handleQuickLog(250, 'Glass (+250ml)')}
+            className="py-2 px-1 rounded-xl bg-[#38BDF8]/15 hover:bg-[#38BDF8]/30 border border-[#38BDF8]/40 text-xs font-mono text-[#38BDF8] transition-all font-bold cursor-pointer"
           >
             +250ml
           </button>
           <button
-            onClick={() => handleQuickLog(500, 'Water Bottle')}
-            className="frosted-pill py-2 rounded-xl text-xs font-semibold text-[#38bdf8] hover:bg-[#38bdf8] hover:text-[#070f19] border border-[#38bdf8]/30 transition-all font-mono cursor-pointer active:scale-95"
+            onClick={() => handleQuickLog(500, 'Bottle (+500ml)')}
+            className="py-2 px-1 rounded-xl bg-white/5 hover:bg-[#38BDF8]/20 border border-white/10 hover:border-[#38BDF8]/40 text-xs font-mono text-white transition-all font-bold cursor-pointer"
           >
             +500ml
           </button>
         </div>
 
-        <div className="flex items-center justify-between pt-2">
+        {/* Beverage row */}
+        <div className="grid grid-cols-2 gap-2 pt-1">
           <button
-            onClick={() => setShowCustomModal(true)}
-            className="text-[11px] text-slate-400 hover:text-white flex items-center gap-1 transition-colors cursor-pointer"
+            onClick={() => handleQuickLog(150, '☕ Coffee')}
+            className="py-1.5 px-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/5 text-xs text-slate-300 hover:text-white transition-all cursor-pointer flex items-center justify-center gap-1.5"
           >
-            <Plus className="w-3 h-3 text-[#38bdf8]" /> Custom ml
+            <span>☕</span>
+            <span className="font-mono text-[11px]">+☕ Coffee</span>
           </button>
-
-          {onReset && (
-            <button
-              onClick={() => {
-                if (window.confirm('Reset intake back to 0 ml?')) {
-                  onReset();
-                }
-              }}
-              className="text-[11px] text-slate-500 hover:text-rose-400 flex items-center gap-1 transition-colors cursor-pointer"
-              title="Reset daily intake"
-            >
-              <RotateCcw className="w-3 h-3" /> Reset
-            </button>
-          )}
+          <button
+            onClick={() => handleQuickLog(150, '🍵 Tea')}
+            className="py-1.5 px-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/5 text-xs text-slate-300 hover:text-white transition-all cursor-pointer flex items-center justify-center gap-1.5"
+          >
+            <span>🍵</span>
+            <span className="font-mono text-[11px]">+🍵 Tea</span>
+          </button>
         </div>
       </div>
 
-      {/* Explicit Simulator Notice */}
-      <div className="mt-4 pt-3 border-t border-white/5 text-center">
-        <p className="text-[10px] text-slate-400 leading-tight">
-          💡 <strong>Web Simulator:</strong> Demonstrates how one-click logging works on desktop. The actual app runs silently in your Windows 10/11 taskbar tray.
-        </p>
+      {/* Bottom controls */}
+      <div className="flex items-center justify-between border-t border-white/5 pt-3 mt-4 text-[11px] font-mono text-slate-400">
+        <button
+          onClick={() => setShowCustomModal(true)}
+          className="text-[#38BDF8] hover:underline flex items-center gap-1 cursor-pointer"
+        >
+          <Plus className="w-3 h-3" />
+          <span>Custom ml</span>
+        </button>
+
+        {onReset && (
+          <button
+            onClick={onReset}
+            className="text-slate-400 hover:text-rose-400 flex items-center gap-1 cursor-pointer transition-colors"
+          >
+            <RotateCcw className="w-3 h-3" />
+            <span>Reset</span>
+          </button>
+        )}
       </div>
 
-      {/* Custom Amount Sub-Modal */}
+      {/* Custom Volume Modal */}
       {showCustomModal && (
-        <div className="absolute inset-0 bg-[#070f19]/95 backdrop-blur-md flex flex-col justify-center p-6 z-20 animate-in fade-in">
-          <h4 className="text-sm font-semibold text-white mb-2">Log Custom Intake</h4>
-          <p className="text-xs text-slate-400 mb-4">
-            Enter the exact volume in milliliters consumed:
-          </p>
-          <form onSubmit={handleCustomSubmit} className="space-y-4">
+        <div className="absolute inset-0 bg-[#0C141F]/95 backdrop-blur-md flex flex-col items-center justify-center p-6 z-30 animate-in fade-in">
+          <h4 className="text-sm font-semibold text-white mb-2 font-mono">Custom Water Amount</h4>
+          <form onSubmit={handleCustomSubmit} className="w-full space-y-3">
             <input
               type="number"
-              min="10"
+              min="50"
               max="2000"
-              step="10"
+              step="50"
               value={customVal}
               onChange={(e) => setCustomVal(e.target.value)}
-              className="w-full bg-[#0c141f] border border-white/20 rounded-xl px-4 py-2.5 text-white font-mono text-center focus:outline-none focus:border-[#38bdf8]"
+              className="w-full bg-[#070F19] border border-white/20 rounded-xl px-3 py-2 text-white font-mono text-center text-lg focus:border-[#38BDF8] outline-none"
               autoFocus
             />
             <div className="flex gap-2">
               <button
                 type="button"
                 onClick={() => setShowCustomModal(false)}
-                className="flex-1 py-2 rounded-xl text-xs text-slate-400 bg-white/5 hover:bg-white/10"
+                className="flex-1 py-2 rounded-xl bg-white/10 text-slate-300 text-xs font-mono cursor-pointer"
               >
                 Cancel
               </button>
               <button
                 type="submit"
-                className="flex-1 py-2 rounded-xl text-xs font-semibold bg-[#38bdf8] text-[#070f19] hover:bg-sky-400 shadow-md"
+                className="flex-1 py-2 rounded-xl bg-[#38BDF8] text-[#070F19] text-xs font-mono font-bold cursor-pointer"
               >
-                Record
+                Add ml
               </button>
             </div>
           </form>

@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><meta content="web_dashboard" name="shell-type"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:ital,wght@0,300..900;1,300..900&amp;family=Space+Grotesk:wght@300..700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config={darkMode:"class",theme:{extend:{"colors":{"outline":"#87929a","secondary-fixed-dim":"#7bd1fa","surface-container":"#18202b","on-background":"#dbe3f3","surface-variant":"#2d3541","surface-container-lowest":"#070f19","primary":"#8ed5ff","on-surface-variant":"#bdc8d1","primary-fixed":"#c4e7ff","on-primary":"#00354a","on-secondary":"#003547","secondary-container":"#00799e","inverse-on-surface":"#29313d","inverse-primary":"#00668a","on-primary-container":"#004965","surface-tint":"#7bd0ff","on-primary-fixed":"#001e2c","tertiary-fixed-dim":"#b9c8de","on-surface":"#dbe3f3","surface-container-high":"#232a36","primary-fixed-dim":"#7bd0ff","surface-container-low":"#141c27","secondary-fixed":"#c0e8ff","tertiary":"#becee4","surface-bright":"#323a46","tertiary-container":"#a3b2c7","on-secondary-fixed":"#001e2b","tertiary-fixed":"#d4e4fa","on-tertiary":"#233143","on-tertiary-fixed-variant":"#39485a","primary-container":"#38bdf8","surface-dim":"#0c141f","background":"#0c141f","surface-container-highest":"#2d3541","surface":"#0c141f","on-primary-fixed-variant":"#004c69","error":"#ffb4ab","on-tertiary-fixed":"#0d1c2d","on-secondary-container":"#e9f6ff","on-tertiary-container":"#364557","outline-variant":"#3e484f","on-error":"#690005","inverse-surface":"#dbe3f3","on-error-container":"#ffdad6","secondary":"#7bd1fa","error-container":"#93000a","on-secondary-fixed-variant":"#004d66"},"borderRadius":{"DEFAULT":"0.25rem","lg":"0.5rem","xl":"0.75rem","full":"9999px"},"spacing":{"space-sm":"0.5rem","space-xl":"4rem","margin-mobile":"1.5rem","margin":"4rem","space-lg":"2rem","gutter-mobile":"1rem","space-2xl":"8rem","space-xs":"0.25rem","space-md":"1rem","gutter":"2rem"},"fontFamily":{"headline-xl":["Space Grotesk"],"display-hero":["Space Grotesk"],"headline-xl-mobile":["Space Grotesk"],"label-code":["Space Grotesk"],"body-sm":["Hanken Grotesk"],"headline-lg":["Space Grotesk"],"headline-sm":["Space Grotesk"],"display-hero-mobile":["Space Grotesk"],"body-xl":["Hanken Grotesk"],"label-caps":["Space Grotesk"],"body-base":["Hanken Grotesk"]},"fontSize":{"headline-xl":["3.5rem",{"lineHeight":"1.1","letterSpacing":"-0.03em","fontWeight":"400"}],"display-hero":["5.5rem",{"lineHeight":"1.0","letterSpacing":"-0.04em","fontWeight":"400"}],"headline-xl-mobile":["2.25rem",{"lineHeight":"1.15","letterSpacing":"-0.02em","fontWeight":"400"}],"label-code":["0.75rem",{"lineHeight":"1.2","letterSpacing":"0.14em","fontWeight":"500"}],"body-sm":["0.875rem",{"lineHeight":"1.55","letterSpacing":"0.01em","fontWeight":"400"}],"headline-lg":["2.25rem",{"lineHeight":"1.2","letterSpacing":"-0.02em","fontWeight":"500"}],"headline-sm":["1.5rem",{"lineHeight":"1.3","letterSpacing":"-0.01em","fontWeight":"500"}],"display-hero-mobile":["3rem",{"lineHeight":"1.05","letterSpacing":"-0.03em","fontWeight":"400"}],"body-xl":["1.25rem",{"lineHeight":"1.65","letterSpacing":"0em","fontWeight":"300"}],"label-caps":["0.6875rem",{"lineHeight":"1.1","letterSpacing":"0.2em","fontWeight":"600"}],"body-base":["1rem",{"lineHeight":"1.6","letterSpacing":"0.01em","fontWeight":"400"}]}}}}</script></head><body class="bg-surface-container-lowest font-body-base text-body-base text-on-surface antialiased selection:bg-primary-container selection:text-on-primary-container min-h-screen"><aside class="fixed left-0 top-0 h-full w-72 bg-surface-container-low/90 backdrop-blur-xl z-50 flex flex-col justify-between py-6 px-4 shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="flex flex-col gap-6"><div class="flex items-center justify-between px-2"><div class="flex items-center gap-3"><div class="w-7 h-7 bg-primary-container flex items-center justify-center"><span class="material-symbols-outlined text-on-primary-container text-[18px]">water_drop</span></div><div class="flex flex-col"><span class="font-headline-sm text-headline-sm tracking-tight text-on-surface leading-none">WATER BUDDY</span><span class="font-label-code text-label-code text-primary uppercase mt-1">Abyssal CMS // Core</span></div></div><div class="w-2 h-2 rounded-full bg-secondary shadow-[0_0_8px_#7bd1fa]"></div></div><div class="p-1 bg-surface-container-lowest rounded-lg flex items-center"><button class="flex-1 py-1.5 px-2 bg-surface-container text-primary font-label-caps text-label-caps uppercase text-center rounded transition-all" type="button">Owner Admin</button><button class="flex-1 py-1.5 px-2 text-on-surface-variant hover:text-on-surface font-label-caps text-label-caps uppercase text-center rounded transition-all" type="button">End User</button></div><div class="flex flex-col gap-1"><span class="px-2 py-1 font-label-caps text-label-caps text-outline uppercase tracking-wider">Navigation Engine</span><nav class="flex flex-col gap-1" data-active-classes="bg-surface-container text-primary font-bold"><a class="flex items-center gap-3 px-3 py-2.5 rounded text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="overview-telemetry" href="#"><span class="material-symbols-outlined text-[18px]">insights</span><span class="font-body-sm text-body-sm">Overview Telemetry</span></a><a class="flex items-center gap-3 px-3 py-2.5 rounded text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="mineral-extraction-cms" href="#"><span class="material-symbols-outlined text-[18px]">layers</span><span class="font-body-sm text-body-sm">Mineral &amp; Extraction</span></a><a class="flex items-center gap-3 px-3 py-2.5 rounded text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="bathymetric-deployments" href="#"><span class="material-symbols-outlined text-[18px]">explore</span><span class="font-body-sm text-body-sm">Bathymetric Fleet</span></a><a class="flex items-center gap-3 px-3 py-2.5 rounded text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="consumer-distribution" href="#"><span class="material-symbols-outlined text-[18px]">hub</span><span class="font-body-sm text-body-sm">Distribution Nodes</span></a><a class="flex items-center gap-3 px-3 py-2.5 rounded text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="spectral-quality-control" href="#"><span class="material-symbols-outlined text-[18px]">biotech</span><span class="font-body-sm text-body-sm">Spectral Analysis</span></a></nav></div><div class="flex flex-col gap-1"><span class="px-2 py-1 font-label-caps text-label-caps text-outline uppercase tracking-wider">Workspace Direct</span><nav class="flex flex-col gap-1" data-active-classes="bg-surface-container text-primary font-bold"><a class="flex items-center gap-3 px-3 py-2.5 rounded text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="consumer-hydration-portal" href="#"><span class="material-symbols-outlined text-[18px]">person_apron</span><span class="font-body-sm text-body-sm">Hydration Ledger</span></a><a class="flex items-center gap-3 px-3 py-2.5 rounded text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="smart-dispenser-fleet" href="#"><span class="material-symbols-outlined text-[18px]">mode_fan</span><span class="font-body-sm text-body-sm">Connected Vessels</span></a><a class="flex items-center gap-3 px-3 py-2.5 rounded text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="audit-logs-security" href="#"><span class="material-symbols-outlined text-[18px]">shield</span><span class="font-body-sm text-body-sm">Security &amp; Audits</span></a></nav></div></div><div class="flex flex-col gap-3 pt-4 bg-surface-container-lowest/60 p-3 rounded-lg"><div class="flex items-center justify-between"><span class="font-label-caps text-label-caps text-outline uppercase">Subsea Link</span><div class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span><span class="font-label-code text-label-code text-secondary">ONLINE</span></div></div><div class="flex items-center justify-between text-on-surface-variant"><span class="font-body-sm text-body-sm">Depth Pressure</span><span class="font-label-code text-label-code text-on-surface">-1,280m / 129 BAR</span></div></div></aside><div class="pl-72"><header class="fixed top-0 left-72 right-0 h-16 bg-surface/85 backdrop-blur-xl z-40 flex items-center justify-between px-8 shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="flex items-center gap-4"><div class="flex items-center gap-2 text-on-surface-variant font-label-code text-label-code uppercase"><span class="hover:text-on-surface transition-colors cursor-pointer">SYSTEM CORE</span><span class="text-outline">/</span><span class="text-primary">WORKSPACE OPERATIONAL</span></div><div class="h-4 w-px bg-surface-variant"></div><div class="flex items-center gap-2 px-2.5 py-1 bg-surface-container rounded"><span class="w-2 h-2 rounded-full bg-primary-container animate-ping"></span><span class="font-label-code text-label-code text-on-surface-variant uppercase">WIN32 SYNC ACTIVE</span></div></div><div class="flex items-center gap-6"><div class="relative flex items-center"><span class="material-symbols-outlined absolute left-3 text-outline text-[18px]">search</span><input class="bg-surface-container-low pl-9 pr-4 py-1.5 text-on-surface placeholder:text-outline text-body-sm font-body-sm rounded w-72 focus:outline-none focus:ring-1 focus:ring-primary-container" placeholder="Search minerals, fleet vessels, telemetries..." type="search"/></div><div class="flex items-center gap-3"><button class="text-on-surface-variant hover:text-on-surface p-1.5 rounded transition-colors" type="button"><span class="material-symbols-outlined text-[20px]">tune</span></button><button class="text-on-surface-variant hover:text-on-surface p-1.5 rounded transition-colors" type="button"><span class="material-symbols-outlined text-[20px]">notifications</span></button><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></div></header><main class="relative pt-16 bg-surface-container-lowest min-h-[calc(100vh-2.5rem)]"><div class="flex flex-col w-full">
+<!-- Sub-Header Workspace Utility Bar -->
+<section class="w-full bg-surface-container-low px-8 py-3.5 flex items-center justify-between shadow-sm">
+<div class="flex items-center gap-4">
+<div class="flex items-center gap-2 font-label-code text-label-code uppercase text-on-surface-variant">
+<span class="hover:text-primary transition-colors cursor-pointer">Water Buddy</span>
+<span class="text-outline">/</span>
+<span class="hover:text-primary transition-colors cursor-pointer">Desk Console</span>
+<span class="text-outline">/</span>
+<span class="text-primary font-bold">Daily Overview</span>
+</div>
+<span class="h-3.5 w-px bg-surface-variant"></span>
+<div class="flex items-center gap-2 px-2.5 py-1 bg-surface-container rounded-sm">
+<span class="material-symbols-outlined text-[13px] text-secondary">terminal</span>
+<span class="font-label-code text-label-code text-on-surface">Tray Hook: Active (PID 4092)</span>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<!-- Daily Tracker Pill -->
+<div class="flex items-center gap-2.5 px-3 py-1 bg-surface-container-highest rounded-full">
+<div class="relative w-2.5 h-2.5 flex items-center justify-center">
+<span class="absolute w-2 h-2 rounded-full bg-primary-container animate-ping opacity-60"></span>
+<span class="w-1.5 h-1.5 rounded-full bg-primary-container"></span>
+</div>
+<span class="font-label-code text-label-code text-on-surface tracking-wide">1,850 / 2,500 ml</span>
+<span class="font-label-code text-label-code text-secondary bg-surface-container-lowest px-1.5 py-0.5 rounded-full">74%</span>
+</div>
+<!-- Practitioner Profile Pill -->
+<div class="flex items-center gap-2.5 pl-2 pr-3 py-1 bg-surface-container rounded-full">
+<div class="w-5 h-5 rounded-full bg-primary-container flex items-center justify-center">
+<span class="material-symbols-outlined text-on-primary-container text-[12px]" style="font-variation-settings: 'FILL' 1;">water_drop</span>
+</div>
+<span class="font-label-code text-label-code text-on-surface font-medium">Devon Vance</span>
+<span class="font-label-caps text-label-caps text-outline uppercase">PRO PRACTITIONER</span>
+</div>
+</div>
+</section>
+<!-- Editorial Canvas Space -->
+<div class="p-8 space-y-8">
+<!-- Hero Matrix: Left Cockpit Ring / Right Quick Sip & Adaptive Pacing -->
+<div class="grid grid-cols-12 gap-8 items-stretch">
+<!-- Cockpit & Circular Intake Visualizer -->
+<div class="col-span-12 lg:col-span-7 bg-surface-container-low p-8 rounded-lg flex flex-col justify-between shadow-md relative overflow-hidden">
+<div class="absolute -right-20 -bottom-20 w-80 h-80 rounded-full bg-primary/5 blur-3xl pointer-events-none"></div>
+<div class="flex items-center justify-between pb-6">
+<div class="flex flex-col gap-1">
+<span class="font-label-caps text-label-caps text-outline uppercase tracking-widest">REAL-TIME FLUID HARVEST</span>
+<h2 class="font-headline-lg text-headline-lg text-on-surface tracking-tight">Today's Hydration Cockpit</h2>
+</div>
+<div class="flex items-center gap-2 bg-surface-container-lowest px-3 py-1 rounded">
+<span class="w-2 h-2 rounded-full bg-secondary"></span>
+<span class="font-label-code text-label-code text-on-surface uppercase">HYDROSTATIC FLUX: STABLE</span>
+</div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-12 gap-8 items-center py-4">
+<!-- Circular SVG Radial Gauge -->
+<div class="md:col-span-6 flex flex-col items-center justify-center relative">
+<div class="relative w-56 h-56 flex items-center justify-center">
+<svg class="w-full h-full transform -rotate-90" viewbox="0 0 160 160">
+<circle class="text-surface-container-high" cx="80" cy="80" fill="transparent" r="70" stroke="currentColor" stroke-width="8"></circle>
+<circle class="text-secondary" cx="80" cy="80" fill="transparent" r="70" stroke="currentColor" stroke-dasharray="440" stroke-dashoffset="114.4" stroke-linecap="round" stroke-width="8"></circle>
+<!-- Secondary target boundary spark indicator -->
+<circle class="text-surface-container-highest" cx="80" cy="80" fill="transparent" r="56" stroke="currentColor" stroke-dasharray="352" stroke-dashoffset="60" stroke-width="2"></circle>
+</svg>
+<div class="absolute inset-0 flex flex-col items-center justify-center text-center">
+<span class="font-label-code text-label-code text-outline uppercase tracking-widest">INGESTED</span>
+<span class="font-display-hero-mobile text-display-hero-mobile text-on-surface leading-none tracking-tighter mt-1 font-headline-xl">1,850</span>
+<span class="font-label-code text-label-code text-primary uppercase mt-1">MILLILITERS</span>
+</div>
+</div>
+<div class="mt-4 flex items-center gap-4 text-center">
+<div class="flex flex-col">
+<span class="font-label-caps text-label-caps text-outline uppercase">COMPLETION</span>
+<span class="font-headline-sm text-headline-sm text-secondary">74.0%</span>
+</div>
+<div class="h-6 w-px bg-surface-variant"></div>
+<div class="flex flex-col">
+<span class="font-label-caps text-label-caps text-outline uppercase">DEFICIT</span>
+<span class="font-headline-sm text-headline-sm text-on-surface">650 ml</span>
+</div>
+</div>
+</div>
+<!-- Micro Metrology Stats & Basalt Visual Feed -->
+<div class="md:col-span-6 flex flex-col justify-between h-full space-y-4">
+<div class="bg-surface-container-lowest p-4 rounded space-y-3">
+<div class="flex items-center justify-between text-on-surface-variant font-label-code text-label-code">
+<span>ACTIVE CELLULAR QUOTIENT</span>
+<span class="text-primary font-bold">0.89 λ</span>
+</div>
+<div class="w-full bg-surface-container-high h-1 rounded-full overflow-hidden">
+<div class="bg-primary h-full w-[89%]"></div>
+</div>
+<div class="flex items-center justify-between text-outline font-label-code text-label-code pt-1">
+<span>Diurnal Metabolic Baseline</span>
+<span class="text-on-surface">Target 2,500 ml</span>
+</div>
+</div>
+<!-- Deep Mineral Macro Snapshot -->
+<div class="relative rounded overflow-hidden bg-surface-container-highest h-32 flex items-end p-3">
+<img class="absolute inset-0 w-full h-full object-cover opacity-60" data-alt="Macro close-up photograph of pure glacial deep-sea water condensation droplets beaded upon matte black basalt volcanic stone, oceanic slate lighting, ultra crisp refraction, cinematic monolithic tone." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBUYeygmUQtYk4v-mQsjp4KU4hjcyYWYZ0_c7KeK28KOWKTeGVa3YZgHYsivDV0CJxEsUNYBZ3sS2v6epkf_tkYHshuqz2ZmpXBmV9BRe3fIiPQSK2s7i4ZHVlkcrMm1Pn3XyI7dO-dG-Cdu5h5TqYIAQG20Jh6SwzzOsz4iX3MEptNKRpZq0bGqM0clkE9YWOQqxuL8X49JpbFlraDSfSv24VmdrvpcFHEgvT35_LxTpLxqt7eem8YGw"/>
+<div class="absolute inset-0 bg-gradient-to-t from-surface-container-lowest via-surface-container-lowest/40 to-transparent"></div>
+<div class="relative z-10 flex items-center justify-between w-full">
+<div class="flex flex-col">
+<span class="font-label-caps text-label-caps text-secondary uppercase">Source Stream Calibration</span>
+<span class="font-body-sm text-body-sm text-on-surface">Nordic Glacial Melt • TDS 42 ppm</span>
+</div>
+<span class="font-label-code text-label-code bg-surface-container-low/90 px-2 py-0.5 rounded text-on-surface font-mono">PH 7.82</span>
+</div>
+</div>
+<div class="flex items-center gap-2 pt-1 text-on-surface-variant font-label-code text-label-code">
+<span class="material-symbols-outlined text-secondary text-[16px]">sync</span>
+<span>Direct Win32 Low-Latency Pipe active</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Quick Sip Injector & Dynamic Biological Pacing Forecast -->
+<div class="col-span-12 lg:col-span-5 flex flex-col gap-6">
+<!-- Injector Panel -->
+<div class="bg-surface-container-low p-6 rounded-lg shadow-md flex-1 flex flex-col justify-between">
+<div>
+<div class="flex items-center justify-between pb-4">
+<span class="font-label-caps text-label-caps text-outline uppercase tracking-wider">MICROLOGGING INTERFACE</span>
+<span class="font-label-code text-label-code text-primary bg-surface-container px-2 py-0.5 rounded">HOTKEY: CTRL+ALT+W</span>
+</div>
+<h3 class="font-headline-sm text-headline-sm text-on-surface mb-2">Quick Sip Injector</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant mb-6">Dispatch instantaneous hydration markers directly into the persistent local SQLite ledger.</p>
+<!-- Injection Pills Grid -->
+<div class="grid grid-cols-2 gap-3" id="quick-sip-group">
+<button class="sip-pill flex flex-col p-3.5 bg-surface-container hover:bg-surface-container-high rounded text-left transition-all active:scale-[0.98]" onclick="logIntake(150, this)" type="button">
+<div class="flex items-center justify-between w-full">
+<span class="font-label-caps text-label-caps text-secondary uppercase tracking-wider">SIP</span>
+<span class="material-symbols-outlined text-[16px] text-outline">water_lux</span>
+</div>
+<span class="font-headline-sm text-headline-sm text-on-surface mt-1">+150 <span class="font-body-sm text-body-sm font-normal text-on-surface-variant">ml</span></span>
+<span class="font-label-code text-label-code text-outline mt-1">Light Hydration</span>
+</button>
+<button class="sip-pill flex flex-col p-3.5 bg-surface-container hover:bg-surface-container-high rounded text-left transition-all active:scale-[0.98]" onclick="logIntake(250, this)" type="button">
+<div class="flex items-center justify-between w-full">
+<span class="font-label-caps text-label-caps text-primary uppercase tracking-wider">GLASS</span>
+<span class="material-symbols-outlined text-[16px] text-outline">local_cafe</span>
+</div>
+<span class="font-headline-sm text-headline-sm text-on-surface mt-1">+250 <span class="font-body-sm text-body-sm font-normal text-on-surface-variant">ml</span></span>
+<span class="font-label-code text-label-code text-outline mt-1">Standard Tumbler</span>
+</button>
+<button class="sip-pill flex flex-col p-3.5 bg-surface-container hover:bg-surface-container-high rounded text-left transition-all active:scale-[0.98]" onclick="logIntake(500, this)" type="button">
+<div class="flex items-center justify-between w-full">
+<span class="font-label-caps text-label-caps text-secondary uppercase tracking-wider">BASALT FLASK</span>
+<span class="material-symbols-outlined text-[16px] text-outline">water_bottle</span>
+</div>
+<span class="font-headline-sm text-headline-sm text-on-surface mt-1">+500 <span class="font-body-sm text-body-sm font-normal text-on-surface-variant">ml</span></span>
+<span class="font-label-code text-label-code text-outline mt-1">Vessel Quench</span>
+</button>
+<button class="flex flex-col p-3.5 bg-surface-container-lowest hover:bg-surface-container rounded text-left transition-all active:scale-[0.98]" onclick="promptCustomIntake()" type="button">
+<div class="flex items-center justify-between w-full">
+<span class="font-label-caps text-label-caps text-outline uppercase tracking-wider">CUSTOM</span>
+<span class="material-symbols-outlined text-[16px] text-secondary">tune</span>
+</div>
+<span class="font-headline-sm text-headline-sm text-on-surface mt-1">Custom <span class="font-body-sm text-body-sm font-normal text-on-surface-variant">ml</span></span>
+<span class="font-label-code text-label-code text-outline mt-1">Arbitrary Dose</span>
+</button>
+</div>
+</div>
+<div class="opacity-0 transition-opacity duration-300 mt-4 p-2.5 bg-surface-container rounded flex items-center justify-between" id="injection-feedback">
+<span class="font-label-code text-label-code text-primary flex items-center gap-2">
+<span class="w-1.5 h-1.5 rounded-full bg-primary animate-ping"></span>
+<span>Intake committed to Local SQLite Vault</span>
+</span>
+<span class="font-label-code text-label-code text-outline">NOW</span>
+</div>
+</div>
+<!-- Adaptive Pacing Forecast Card -->
+<div class="bg-surface-container-low p-6 rounded-lg shadow-md flex flex-col justify-between">
+<div class="flex items-center justify-between pb-3">
+<span class="font-label-caps text-label-caps text-outline uppercase tracking-wider">BIOLOGICAL ALERT PACING</span>
+<span class="font-label-code text-label-code text-secondary flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[14px]">graphic_eq</span>
+<span>WASAPI CHIME</span>
+</span>
+</div>
+<div class="flex items-baseline justify-between pt-1">
+<div class="flex flex-col">
+<span class="font-label-code text-label-code text-outline uppercase">NEXT PACING CHIME IN</span>
+<span class="font-headline-xl text-headline-xl text-primary font-headline-xl leading-none mt-1">22 <span class="font-headline-sm text-headline-sm text-on-surface font-normal">MIN</span></span>
+</div>
+<div class="text-right flex flex-col items-end">
+<span class="font-label-caps text-label-caps text-outline uppercase">ACOUSTIC PROFILE</span>
+<span class="font-body-base text-body-base text-on-surface font-medium mt-1">Icelandic Rain 48kHz</span>
+<span class="font-label-code text-label-code text-on-surface-variant">Zero-Decibel Attack / 1.8s Decay</span>
+</div>
+</div>
+<!-- Micro scrubber timeline -->
+<div class="w-full bg-surface-container-lowest h-2 rounded-full overflow-hidden mt-5 relative">
+<div class="bg-primary-container h-full w-[68%] rounded-full"></div>
+<div class="absolute top-0 bottom-0 left-[68%] w-1 bg-on-surface shadow-[0_0_8px_#8ed5ff]"></div>
+</div>
+<div class="flex items-center justify-between text-outline font-label-code text-label-code pt-2">
+<span>Last Hydrated: 14:18 (38m ago)</span>
+<span class="text-secondary">Expected Interval: 60m</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Daily Tracker & Metabolic Focus Diurnal Timeline -->
+<section class="bg-surface-container-low p-8 rounded-lg shadow-md space-y-6">
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+<div>
+<span class="font-label-caps text-label-caps text-outline uppercase tracking-wider">DIURNAL WORKDAY ANALYSIS</span>
+<h3 class="font-headline-lg text-headline-lg text-on-surface tracking-tight mt-0.5">8-Hour Workday Diurnal Timeline</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Real-time correlation of desk stillness, ergonomic keyboard activity, and water intake events.</p>
+</div>
+<!-- Temperature & Sedentary Adjustment Widget -->
+<div class="flex items-center gap-4 bg-surface-container p-3 rounded-lg">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded bg-surface-container-lowest flex items-center justify-center">
+<span class="material-symbols-outlined text-secondary text-[18px]">thermostat</span>
+</div>
+<div class="flex flex-col">
+<span class="font-label-caps text-label-caps text-outline uppercase">MICROCLIMATE</span>
+<span class="font-label-code text-label-code text-on-surface font-bold">23.5°C AMBIENT</span>
+</div>
+</div>
+<div class="h-8 w-px bg-surface-variant"></div>
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded bg-surface-container-lowest flex items-center justify-center">
+<span class="material-symbols-outlined text-primary text-[18px]">chair</span>
+</div>
+<div class="flex flex-col">
+<span class="font-label-caps text-label-caps text-outline uppercase">SEDENTARY DESK</span>
+<span class="font-label-code text-label-code text-on-surface font-bold">4.2H IMMOBILE</span>
+</div>
+</div>
+<div class="h-8 w-px bg-surface-variant"></div>
+<div class="flex flex-col bg-surface-container-lowest px-3 py-1 rounded">
+<span class="font-label-caps text-label-caps text-primary uppercase">METABOLIC ADAPTATION</span>
+<span class="font-label-code text-label-code text-secondary font-bold">+12% FLUID COEFFICIENT</span>
+</div>
+</div>
+</div>
+<!-- 8-Hour Visual Diurnal Grid -->
+<div class="space-y-2 pt-2">
+<div class="grid grid-cols-8 gap-2 font-label-code text-label-code text-outline uppercase text-center pb-1">
+<div>09:00 - 10:00</div>
+<div>10:00 - 11:00</div>
+<div>11:00 - 12:00</div>
+<div>12:00 - 13:00</div>
+<div>13:00 - 14:00</div>
+<div class="text-secondary font-bold">14:00 - 15:00 (NOW)</div>
+<div>15:00 - 16:00</div>
+<div>16:00 - 17:00</div>
+</div>
+<!-- Interactive Blocks representing Workday Segments -->
+<div class="grid grid-cols-8 gap-2 h-28">
+<!-- 09:00 -->
+<div class="bg-surface-container rounded p-2.5 flex flex-col justify-between group hover:bg-surface-container-high transition-colors cursor-pointer">
+<div class="flex items-center justify-between">
+<span class="w-2 h-2 rounded-full bg-secondary"></span>
+<span class="font-label-caps text-label-caps text-outline">350 ml</span>
+</div>
+<div class="space-y-1">
+<div class="w-full bg-primary/20 h-1 rounded-full">
+<div class="bg-primary h-full w-[80%]"></div>
+</div>
+<span class="font-label-code text-label-code text-on-surface-variant block truncate">Desk Boot</span>
+</div>
+</div>
+<!-- 10:00 -->
+<div class="bg-surface-container rounded p-2.5 flex flex-col justify-between group hover:bg-surface-container-high transition-colors cursor-pointer">
+<div class="flex items-center justify-between">
+<span class="w-2 h-2 rounded-full bg-secondary"></span>
+<span class="font-label-caps text-label-caps text-outline">250 ml</span>
+</div>
+<div class="space-y-1">
+<div class="w-full bg-primary/20 h-1 rounded-full">
+<div class="bg-primary h-full w-[60%]"></div>
+</div>
+<span class="font-label-code text-label-code text-on-surface-variant block truncate">Focus Block 1</span>
+</div>
+</div>
+<!-- 11:00 -->
+<div class="bg-surface-container rounded p-2.5 flex flex-col justify-between group hover:bg-surface-container-high transition-colors cursor-pointer">
+<div class="flex items-center justify-between">
+<span class="w-2 h-2 rounded-full bg-outline"></span>
+<span class="font-label-caps text-label-caps text-outline">150 ml</span>
+</div>
+<div class="space-y-1">
+<div class="w-full bg-primary/20 h-1 rounded-full">
+<div class="bg-primary h-full w-[35%]"></div>
+</div>
+<span class="font-label-code text-label-code text-on-surface-variant block truncate">Design Review</span>
+</div>
+</div>
+<!-- 12:00 -->
+<div class="bg-surface-container rounded p-2.5 flex flex-col justify-between group hover:bg-surface-container-high transition-colors cursor-pointer">
+<div class="flex items-center justify-between">
+<span class="w-2 h-2 rounded-full bg-secondary"></span>
+<span class="font-label-caps text-label-caps text-outline">500 ml</span>
+</div>
+<div class="space-y-1">
+<div class="w-full bg-primary/20 h-1 rounded-full">
+<div class="bg-primary h-full w-[100%]"></div>
+</div>
+<span class="font-label-code text-label-code text-on-surface-variant block truncate">Post-Meal Surge</span>
+</div>
+</div>
+<!-- 13:00 -->
+<div class="bg-surface-container rounded p-2.5 flex flex-col justify-between group hover:bg-surface-container-high transition-colors cursor-pointer">
+<div class="flex items-center justify-between">
+<span class="w-2 h-2 rounded-full bg-secondary"></span>
+<span class="font-label-caps text-label-caps text-outline">350 ml</span>
+</div>
+<div class="space-y-1">
+<div class="w-full bg-primary/20 h-1 rounded-full">
+<div class="bg-primary h-full w-[70%]"></div>
+</div>
+<span class="font-label-code text-label-code text-on-surface-variant block truncate">Code Sprint</span>
+</div>
+</div>
+<!-- 14:00 (Active Current Block) -->
+<div class="bg-surface-container-highest rounded p-2.5 flex flex-col justify-between ring-1 ring-primary/40 relative">
+<div class="absolute -top-1 right-2 w-2 h-2 rounded-full bg-primary animate-ping"></div>
+<div class="flex items-center justify-between">
+<span class="w-2 h-2 rounded-full bg-primary"></span>
+<span class="font-label-caps text-label-caps text-primary font-bold">250 ml</span>
+</div>
+<div class="space-y-1">
+<div class="w-full bg-primary/20 h-1 rounded-full">
+<div class="bg-secondary h-full w-[55%]"></div>
+</div>
+<span class="font-label-code text-label-code text-primary block truncate">Stillness Alert</span>
+</div>
+</div>
+<!-- 15:00 Future -->
+<div class="bg-surface-container-lowest/60 rounded p-2.5 flex flex-col justify-between opacity-50">
+<div class="flex items-center justify-between">
+<span class="w-2 h-2 rounded-full bg-surface-variant"></span>
+<span class="font-label-caps text-label-caps text-outline">-- ml</span>
+</div>
+<div class="space-y-1">
+<div class="w-full bg-surface-container-high h-1 rounded-full"></div>
+<span class="font-label-code text-label-code text-outline block truncate">Forecast +250</span>
+</div>
+</div>
+<!-- 16:00 Future -->
+<div class="bg-surface-container-lowest/60 rounded p-2.5 flex flex-col justify-between opacity-50">
+<div class="flex items-center justify-between">
+<span class="w-2 h-2 rounded-full bg-surface-variant"></span>
+<span class="font-label-caps text-label-caps text-outline">-- ml</span>
+</div>
+<div class="space-y-1">
+<div class="w-full bg-surface-container-high h-1 rounded-full"></div>
+<span class="font-label-code text-label-code text-outline block truncate">Forecast +400</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Timeline Legend and Metrics Strip -->
+<div class="flex flex-wrap items-center justify-between pt-2 text-on-surface-variant font-label-code text-label-code">
+<div class="flex items-center gap-6">
+<div class="flex items-center gap-2">
+<span class="w-2.5 h-2.5 bg-secondary rounded-sm"></span>
+<span>Intake Fulfilled</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="w-2.5 h-2.5 bg-primary rounded-sm"></span>
+<span>Active Current Window</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="w-2.5 h-2.5 bg-surface-variant rounded-sm"></span>
+<span>Scheduled Pacing Projection</span>
+</div>
+</div>
+<div class="flex items-center gap-4 text-outline">
+<span>Avg Stillness per Intake: 48 mins</span>
+<span>•</span>
+<span>Posture Drift Index: Nominal</span>
+</div>
+</div>
+</section>
+<!-- Twin Section: Biometric Calibration & Perpetual Licensure Cards -->
+<div class="grid grid-cols-1 md:grid-cols-12 gap-8">
+<!-- Card A: Biometric Calibration -->
+<div class="col-span-12 md:col-span-6 bg-surface-container-low p-8 rounded-lg shadow-md flex flex-col justify-between space-y-6">
+<div>
+<div class="flex items-center justify-between pb-4">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary text-[20px]">monitor_heart</span>
+<span class="font-label-caps text-label-caps text-outline uppercase tracking-wider">PHYSIOLOGY MAPPING</span>
+</div>
+<span class="font-label-code text-label-code text-secondary bg-surface-container px-2 py-0.5 rounded">CALIBRATED TODAY</span>
+</div>
+<h3 class="font-headline-sm text-headline-sm text-on-surface mb-2">Profile &amp; Biometric Calibration</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant mb-6">Physiological parameters are stored strictly in local memory and used for baseline algorithmic recalculation.</p>
+<div class="space-y-4">
+<!-- Metric 1: Mass -->
+<div class="flex items-center justify-between p-3.5 bg-surface-container rounded">
+<div class="flex flex-col">
+<span class="font-label-caps text-label-caps text-outline uppercase">BODY MASS SPECIFICATION</span>
+<span class="font-headline-sm text-headline-sm text-on-surface font-headline-sm">74 kg</span>
+</div>
+<div class="text-right flex flex-col items-end">
+<span class="font-label-code text-label-code text-secondary uppercase">CALCULATED TARGET</span>
+<span class="font-headline-sm text-headline-sm text-primary">2,450 ml / day</span>
+</div>
+</div>
+<!-- Metric 2: Microclimate -->
+<div class="flex items-center justify-between p-3.5 bg-surface-container rounded">
+<div class="flex flex-col">
+<span class="font-label-caps text-label-caps text-outline uppercase">MICROCLIMATE SENSITIVITY</span>
+<span class="font-body-base text-body-base text-on-surface font-medium">High Fluid Transpiration Mode</span>
+</div>
+<span class="font-label-code text-label-code text-on-surface bg-surface-container-lowest px-2 py-1 rounded">23.5°C • 48% RH</span>
+</div>
+<!-- Metric 3: Notification Mode -->
+<div class="p-3.5 bg-surface-container rounded space-y-1.5">
+<div class="flex items-center justify-between">
+<span class="font-label-caps text-label-caps text-outline uppercase">WINDOWS NOTIFICATION ENGINE</span>
+<span class="font-label-code text-label-code text-secondary">ACTIVE</span>
+</div>
+<div class="flex items-center gap-2 text-on-surface font-body-sm text-body-sm">
+<span class="material-symbols-outlined text-[16px] text-primary">volume_up</span>
+<span>Zero Toast Popups — WASAPI DirectSound Chimes Only</span>
+</div>
+<p class="font-label-code text-label-code text-outline">Bypasses Windows Action Center to eliminate screen interruption during creative flow.</p>
+</div>
+</div>
+</div>
+<div class="pt-4 flex items-center justify-between">
+<button class="px-4 py-2 bg-surface-container hover:bg-surface-container-high text-on-surface font-label-caps text-label-caps uppercase rounded transition-colors flex items-center gap-2" type="button">
+<span class="material-symbols-outlined text-[16px]">tune</span>
+<span>Recalibrate Bio-Model</span>
+</button>
+<span class="font-label-code text-label-code text-outline">SHA-256 Validated</span>
+</div>
+</div>
+<!-- Card B: Subscription & Licensure Information Card -->
+<div class="col-span-12 md:col-span-6 bg-surface-container-low p-8 rounded-lg shadow-md flex flex-col justify-between space-y-6">
+<div>
+<div class="flex items-center justify-between pb-4">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary text-[20px]">verified</span>
+<span class="font-label-caps text-label-caps text-outline uppercase tracking-wider">CRYPTOGRAPHIC REGISTRY</span>
+</div>
+<span class="font-label-code text-label-code text-on-primary bg-primary px-2 py-0.5 rounded font-bold">PERPETUAL</span>
+</div>
+<h3 class="font-headline-sm text-headline-sm text-on-surface mb-2">Subscription &amp; License Info</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant mb-6">Fully authorized perpetual tier with offline node verification and lifetime updates.</p>
+<div class="space-y-4">
+<!-- License Key Module -->
+<div class="p-4 bg-surface-container-lowest rounded space-y-2">
+<div class="flex items-center justify-between">
+<span class="font-label-caps text-label-caps text-outline uppercase">STANDALONE HARDWARE LICENSE</span>
+<span class="font-label-code text-label-code text-secondary">VERIFIED OFFLINE</span>
+</div>
+<div class="flex items-center justify-between bg-surface-container px-3 py-2 rounded">
+<code class="font-label-code text-label-code text-primary font-bold tracking-widest text-[13px]">WB-PRO-9842-AF81-2025</code>
+<button class="hover:text-primary text-outline transition-colors" onclick="navigator.clipboard.writeText('WB-PRO-9842-AF81-2025')" title="Copy Key" type="button">
+<span class="material-symbols-outlined text-[16px]">content_copy</span>
+</button>
+</div>
+<div class="font-label-code text-label-code text-outline">Studio Pro &amp; Lifetime License (₹1,999 Perpetual)</div>
+</div>
+<!-- Seat Authorization & Windows 11 Build Info -->
+<div class="p-3.5 bg-surface-container rounded flex items-center justify-between">
+<div class="flex flex-col">
+<span class="font-label-caps text-label-caps text-outline uppercase">MULTI-MACHINE AUTHORIZATION</span>
+<span class="font-body-sm text-body-sm text-on-surface font-medium">1 of 3 active workstations bound</span>
+<span class="font-label-code text-label-code text-outline mt-0.5">Host: WORKSTATION-THINKPAD // Windows 11 Build 23H2</span>
+</div>
+<div class="w-8 h-8 rounded-full bg-surface-container-lowest flex items-center justify-center text-secondary">
+<span class="material-symbols-outlined text-[18px]">laptop_windows</span>
+</div>
+</div>
+<!-- Invoice and Tax Module -->
+<div class="p-3.5 bg-surface-container rounded flex items-center justify-between">
+<div class="flex flex-col">
+<span class="font-label-caps text-label-caps text-outline uppercase">OFFICIAL TAX DOCUMENTATION</span>
+<span class="font-body-sm text-body-sm text-on-surface">GST Tax Invoice (PDF)</span>
+<span class="font-label-code text-label-code text-outline">INR ₹1,999 (Inclusive of 18% IGST)</span>
+</div>
+<a class="px-3 py-1.5 bg-surface-container-highest hover:bg-surface-bright text-on-surface font-label-caps text-label-caps uppercase rounded transition-colors flex items-center gap-1.5" href="#">
+<span class="material-symbols-outlined text-[14px]">download</span>
+<span>Get PDF</span>
+</a>
+</div>
+</div>
+</div>
+<div class="pt-4 flex items-center justify-between text-on-surface-variant font-label-code text-label-code">
+<span class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[14px] text-secondary">shield</span>
+<span>Air-Gapped Cryptographic Signature OK</span>
+</span>
+<span class="text-outline">UUID: e9c1-4b47-ab89</span>
+</div>
+</div>
+</div>
+<!-- Desk Console Minimal Abyssal Footer -->
+<div class="pt-6 pb-2 border-none">
+<div class="p-4 bg-surface-container-low rounded flex flex-col md:flex-row items-center justify-between text-on-surface-variant font-label-code text-label-code gap-3">
+<div class="flex flex-wrap items-center gap-4">
+<span class="font-bold text-on-surface">Water Buddy Desk Console v2.4.9</span>
+<span class="text-outline">•</span>
+<span class="flex items-center gap-1.5 text-secondary">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>
+<span>Win32 Hook: Synced (14.2ms)</span>
+</span>
+<span class="text-outline">•</span>
+<span class="text-on-surface-variant font-mono">Encrypted Vault: %APPDATA%/vault.db</span>
+</div>
+<div class="text-outline">
+          © 2025 Natural Mineral Studio. Architectural Hydration Ledger.
+        </div>
+</div>
+</div>
+</div>
+</div>
+<script>
+  function logIntake(amount, buttonElement) {
+    const feedback = document.getElementById('injection-feedback');
+    if (feedback) {
+      feedback.style.opacity = '1';
+      setTimeout(() => {
+        feedback.style.opacity = '0';
+      }, 3500);
+    }
+  }
+
+  function promptCustomIntake() {
+    const customValue = prompt("Enter intake in milliliters (ml):", "300");
+    if (customValue && !isNaN(customValue)) {
+      logIntake(parseInt(customValue), null);
+    }
+  }
+</script></main><footer class="w-full h-10 bg-surface-container-lowest flex items-center justify-between px-8 text-on-surface-variant font-label-code text-label-code"><div class="flex items-center gap-6"><span class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>BUILD v4.18.2-ABYSS</span><span>LATENCY: 14ms (TRENCH BUOY 04)</span><span>TLS 1.3 / POST-QUANTUM HARDENED</span></div><div><span>© WATER BUDDY DEEP SEA CMS. ARCHITECTURAL HARVEST REGISTRY.</span></div></footer></div></body></html>

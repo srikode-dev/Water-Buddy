@@ -43,7 +43,7 @@ body, html {
   padding: 6px 10px;
 }
 
-/* Minimal Widget Notification Pill */
+/* Base Minimal Widget Pill */
 .minimal-widget {
   display: flex;
   align-items: center;
@@ -51,15 +51,71 @@ body, html {
   background: rgba(12, 20, 31, 0.96);
   backdrop-filter: blur(28px) saturate(180%);
   -webkit-backdrop-filter: blur(28px) saturate(180%);
-  border: 1px solid rgba(56, 189, 248, 0.35);
   border-radius: 9999px;
   padding: 8px 16px 8px 10px;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.85), 
-              0 0 24px rgba(56, 189, 248, 0.2),
-              inset 0 1px 1px rgba(255, 255, 255, 0.15);
   transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease;
   width: 100%;
   cursor: default;
+}
+
+/* Theme 1: Oceanic Aqua */
+.minimal-widget.theme-oceanic {
+  border: 1px solid rgba(56, 189, 248, 0.35);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.85), 
+              0 0 24px rgba(56, 189, 248, 0.2),
+              inset 0 1px 1px rgba(255, 255, 255, 0.15);
+}
+.theme-oceanic .btn-water {
+  background: linear-gradient(135deg, #38BDF8 0%, #0284C7 100%);
+  color: #070F19;
+}
+.theme-oceanic .btn-water:hover {
+  background: linear-gradient(135deg, #7DD3FC 0%, #38BDF8 100%);
+}
+
+/* Theme 2: Cyber Emerald */
+.minimal-widget.theme-emerald {
+  border: 1px solid rgba(52, 211, 153, 0.4);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.85), 
+              0 0 24px rgba(52, 211, 153, 0.22),
+              inset 0 1px 1px rgba(255, 255, 255, 0.15);
+}
+.theme-emerald .btn-water {
+  background: linear-gradient(135deg, #34D399 0%, #059669 100%);
+  color: #070F19;
+}
+.theme-emerald .btn-water:hover {
+  background: linear-gradient(135deg, #6EE7B7 0%, #34D399 100%);
+}
+
+/* Theme 3: Midnight Obsidian */
+.minimal-widget.theme-obsidian {
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.95), 
+              0 0 20px rgba(255, 255, 255, 0.08),
+              inset 0 1px 1px rgba(255, 255, 255, 0.2);
+}
+.theme-obsidian .btn-water {
+  background: #FFFFFF;
+  color: #070F19;
+}
+.theme-obsidian .btn-water:hover {
+  background: #E2E8F0;
+}
+
+/* Theme 4: Neon Twilight */
+.minimal-widget.theme-neon {
+  border: 1px solid rgba(192, 132, 252, 0.45);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.85), 
+              0 0 25px rgba(192, 132, 252, 0.25),
+              inset 0 1px 1px rgba(255, 255, 255, 0.15);
+}
+.theme-neon .btn-water {
+  background: linear-gradient(135deg, #C084FC 0%, #38BDF8 100%);
+  color: #070F19;
+}
+.theme-neon .btn-water:hover {
+  background: linear-gradient(135deg, #E9D5FF 0%, #7DD3FC 100%);
 }
 
 .minimal-widget.hidden {
@@ -89,7 +145,6 @@ body, html {
 }
 
 .progress-fill {
-  stroke: url(#oceanicGlow);
   transition: stroke-dashoffset 0.8s cubic-bezier(0.16, 1, 0.3, 1);
   filter: drop-shadow(0 2px 6px rgba(56, 189, 248, 0.5));
 }
@@ -147,22 +202,18 @@ body, html {
 
 /* Primary Water Button */
 .btn-water {
-  background: linear-gradient(135deg, #38BDF8 0%, #0284C7 100%);
-  color: #070F19;
   font-family: var(--font-body);
   font-size: 0.82rem;
   font-weight: 700;
   padding: 7px 13px;
   border-radius: 9999px;
   gap: 5px;
-  box-shadow: 0 4px 12px rgba(56, 189, 248, 0.35);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
   white-space: nowrap;
 }
 
 .btn-water:hover {
-  background: linear-gradient(135deg, #7DD3FC 0%, #38BDF8 100%);
   transform: translateY(-1px) scale(1.02);
-  box-shadow: 0 6px 16px rgba(56, 189, 248, 0.5);
 }
 
 .btn-water:active {

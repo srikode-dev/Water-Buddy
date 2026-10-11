@@ -30,7 +30,7 @@ export function ContactView({ onToast }: ContactViewProps) {
   };
 
   return (
-    <div className="space-y-14 pb-20 pt-6 max-w-4xl mx-auto">
+    <div className="space-y-14 pb-20 pt-3 sm:pt-4 max-w-4xl mx-auto">
       {/* Header */}
       <div className="space-y-3 text-center max-w-xl mx-auto">
         <span className="text-xs font-mono text-[#38BDF8] uppercase tracking-wider font-semibold">

@@ -31,23 +31,36 @@ export function LandingView({
   onTriggerCheckout,
   onToast,
 }: LandingViewProps) {
-  // Goal calculator state
+  // Goal calculator state with comprehensive biometrics
   const [weightKg, setWeightKg] = useState(70);
-  const [routine, setRoutine] = useState<WorkspaceRoutine>('desk');
+  const [heightCm, setHeightCm] = useState(172);
+  const [condition, setCondition] = useState<string>('Normal Healthy');
 
-  const getExertionBonus = (r: WorkspaceRoutine) => {
-    switch (r) {
-      case 'moderate':
-        return 400;
-      case 'athletic':
-        return 800;
-      case 'desk':
+  const getConditionOffset = (c: string) => {
+    switch (c) {
+      case 'Athletic / Daily Workout':
+        return 600;
+      case 'Warm / Tropical Climate':
+        return 500;
+      case 'Pregnant / Nursing':
+        return 700;
+      case 'Fluid Restricted (Medical)':
+        return -500;
       default:
         return 0;
     }
   };
 
-  const calculatedGoal = Math.round(((weightKg * 35) + getExertionBonus(routine)) / 50) * 50;
+  const calculateIntake = () => {
+    let base = Math.round(weightKg * 35);
+    const offset = getConditionOffset(condition);
+    if (condition === 'Fluid Restricted (Medical)') {
+      return Math.max(1500, base + offset);
+    }
+    return base + offset;
+  };
+
+  const calculatedGoal = calculateIntake();
   const glasses = Math.round(calculatedGoal / 250);
 
   const handleApplyGoal = () => {
@@ -71,7 +84,7 @@ export function LandingView({
       </div>
 
       {/* 1. HERO SECTION */}
-      <section className="relative z-10 w-full pt-8 md:pt-14">
+      <section className="relative z-10 w-full pt-3 md:pt-6">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-center">
           {/* Left: Headline & Explanation */}
           <div className="lg:col-span-7 flex flex-col gap-6 text-left">
@@ -227,55 +240,99 @@ export function LandingView({
             <div className="lg:col-span-7 space-y-6">
               <div>
                 <span className="text-xs font-mono text-[#38BDF8] uppercase tracking-wider font-semibold">
-                  DAILY WATER CALCULATOR
+                  BIOMETRIC WATER CALCULATOR
                 </span>
                 <h2 className="text-2xl sm:text-3xl font-semibold text-white mt-1">
                   Find your recommended water goal
                 </h2>
                 <p className="text-sm text-slate-300 mt-1">
-                  Calculate the ideal daily intake for your body weight and daily desk routine.
+                  Calculate ideal daily hydration calibrated for your body weight, height, and health routine.
                 </p>
               </div>
 
-              {/* Weight Slider */}
-              <div className="space-y-3 bg-[#070F19]/60 p-5 rounded-2xl border border-white/5">
-                <div className="flex justify-between items-center">
-                  <label className="text-sm font-medium text-slate-200">Your Body Weight</label>
-                  <span className="font-mono text-base font-bold text-[#38BDF8] bg-[#141C27] px-3 py-1 rounded-lg border border-white/10">
-                    {weightKg} kg
-                  </span>
+              {/* Weight & Height Inputs */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {/* Weight Slider & Input */}
+                <div className="space-y-3 bg-[#070F19]/60 p-4 rounded-2xl border border-white/5">
+                  <div className="flex justify-between items-center">
+                    <label className="text-xs font-medium text-slate-200">Body Weight</label>
+                    <div className="flex items-center gap-1 font-mono text-sm font-bold text-[#38BDF8] bg-[#141C27] px-2.5 py-1 rounded-lg border border-white/10">
+                      <input
+                        type="number"
+                        min="35"
+                        max="160"
+                        value={weightKg}
+                        onChange={(e) => setWeightKg(Math.max(30, Math.min(180, Number(e.target.value) || 70)))}
+                        className="w-12 bg-transparent text-right text-[#38BDF8] outline-none"
+                      />
+                      <span>kg</span>
+                    </div>
+                  </div>
+                  <input
+                    type="range"
+                    min="40"
+                    max="140"
+                    value={weightKg}
+                    onChange={(e) => setWeightKg(Number(e.target.value))}
+                    className="w-full cursor-pointer accent-[#38BDF8]"
+                  />
+                  <div className="flex justify-between text-[10px] font-mono text-slate-500">
+                    <span>40 kg</span>
+                    <span>70 kg</span>
+                    <span>140 kg</span>
+                  </div>
                 </div>
-                <input
-                  type="range"
-                  min="40"
-                  max="130"
-                  value={weightKg}
-                  onChange={(e) => setWeightKg(Number(e.target.value))}
-                  className="w-full cursor-pointer"
-                />
-                <div className="flex justify-between text-[11px] font-mono text-slate-500">
-                  <span>40 kg</span>
-                  <span>70 kg (Average)</span>
-                  <span>130 kg</span>
+
+                {/* Height Slider & Input */}
+                <div className="space-y-3 bg-[#070F19]/60 p-4 rounded-2xl border border-white/5">
+                  <div className="flex justify-between items-center">
+                    <label className="text-xs font-medium text-slate-200">Height</label>
+                    <div className="flex items-center gap-1 font-mono text-sm font-bold text-[#38BDF8] bg-[#141C27] px-2.5 py-1 rounded-lg border border-white/10">
+                      <input
+                        type="number"
+                        min="120"
+                        max="220"
+                        value={heightCm}
+                        onChange={(e) => setHeightCm(Math.max(100, Math.min(230, Number(e.target.value) || 170)))}
+                        className="w-12 bg-transparent text-right text-[#38BDF8] outline-none"
+                      />
+                      <span>cm</span>
+                    </div>
+                  </div>
+                  <input
+                    type="range"
+                    min="130"
+                    max="210"
+                    value={heightCm}
+                    onChange={(e) => setHeightCm(Number(e.target.value))}
+                    className="w-full cursor-pointer accent-[#38BDF8]"
+                  />
+                  <div className="flex justify-between text-[10px] font-mono text-slate-500">
+                    <span>130 cm</span>
+                    <span>170 cm</span>
+                    <span>210 cm</span>
+                  </div>
                 </div>
               </div>
 
-              {/* Activity Tier */}
+              {/* Health Condition & Routine Tiers */}
               <div className="space-y-2">
-                <label className="text-xs font-mono text-slate-400 uppercase tracking-wider">
-                  Daily Desk Routine
+                <label className="text-xs font-mono text-slate-400 uppercase tracking-wider block">
+                  Health & Routine Condition
                 </label>
-                <div className="grid grid-cols-3 gap-2">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
                   {[
-                    { id: 'desk', label: 'Desk / Sedentary', sub: 'Standard work' },
-                    { id: 'moderate', label: 'Moderate', sub: '+400ml offset' },
-                    { id: 'athletic', label: 'Active / Workout', sub: '+800ml offset' },
+                    { id: 'Normal Healthy', label: 'Normal Healthy', sub: 'Standard routine (35ml/kg)' },
+                    { id: 'Athletic / Daily Workout', label: 'Athletic / Workout', sub: '+600 ml compensation' },
+                    { id: 'Warm / Tropical Climate', label: 'Warm Climate', sub: '+500 ml sweat offset' },
+                    { id: 'Pregnant / Nursing', label: 'Pregnant / Nursing', sub: '+700 ml hydration' },
+                    { id: 'Fluid Restricted (Medical)', label: 'Fluid Restricted', sub: '-500 ml medical limit' },
                   ].map((tier) => (
                     <button
                       key={tier.id}
-                      onClick={() => setRoutine(tier.id as WorkspaceRoutine)}
-                      className={`p-3 rounded-xl border text-left transition-all cursor-pointer ${
-                        routine === tier.id
+                      onClick={() => setCondition(tier.id)}
+                      className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer ${
+                        condition === tier.id
                           ? 'bg-[#38BDF8]/15 border-[#38BDF8] text-white shadow-md'
                           : 'bg-[#070F19]/40 border-white/5 text-slate-400 hover:text-white'
                       }`}
@@ -290,9 +347,9 @@ export function LandingView({
               {/* Action Button */}
               <button
                 onClick={handleApplyGoal}
-                className="w-full sm:w-auto px-6 py-3 rounded-full bg-[#38BDF8] text-[#070F19] text-xs font-bold uppercase tracking-wider hover:bg-white transition-all shadow-lg cursor-pointer"
+                className="w-full sm:w-auto px-6 py-3 rounded-full bg-[#38BDF8] text-[#070F19] text-xs font-bold uppercase tracking-wider hover:bg-white transition-all shadow-lg cursor-pointer flex items-center justify-center gap-2"
               >
-                Apply Target to Live Preview ({calculatedGoal.toLocaleString()} ml)
+                <span>Apply Target to Live Preview ({calculatedGoal.toLocaleString()} ml)</span>
               </button>
             </div>
 
@@ -308,6 +365,19 @@ export function LandingView({
                 </div>
               </div>
 
+              {/* Exact Formula Breakdown */}
+              <div className="bg-[#141C27] rounded-xl p-3 border border-white/5 space-y-1 text-[11px] font-mono">
+                <div className="text-slate-400 uppercase text-[10px]">Formula Computation:</div>
+                <div className="text-slate-300">
+                  {weightKg} kg × 35 ml = <span className="text-[#38BDF8] font-bold">{(weightKg * 35).toLocaleString()} ml</span>
+                </div>
+                {getConditionOffset(condition) !== 0 && (
+                  <div className="text-slate-300">
+                    Condition Adjustment: <span className="text-[#34D399] font-bold">{getConditionOffset(condition) > 0 ? `+${getConditionOffset(condition)}` : getConditionOffset(condition)} ml</span>
+                  </div>
+                )}
+              </div>
+
               <div className="space-y-3 border-t border-white/10 pt-4 text-xs text-slate-300 font-mono">
                 <div className="flex justify-between">
                   <span className="text-slate-400">Pacing Schedule:</span>
@@ -315,7 +385,7 @@ export function LandingView({
                 </div>
                 <div className="flex justify-between">
                   <span className="text-slate-400">Target Sips per Day:</span>
-                  <span className="text-white font-semibold">{Math.round(calculatedGoal / 150)} Reminders</span>
+                  <span className="text-white font-semibold">{Math.round(calculatedGoal / 250)} Glasses</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-slate-400">Suggested Sip Size:</span>
@@ -324,7 +394,7 @@ export function LandingView({
               </div>
 
               <div className="text-[11px] text-slate-500 italic">
-                *General health guideline. You can manually adjust your target anytime in settings.
+                *Personalized clinical hydration baseline. You can fine-tune in settings anytime.
               </div>
             </div>
           </div>

@@ -53,8 +53,8 @@ body {
 
 /* Sidebar */
 .sidebar {
-  width: 240px;
-  min-width: 240px;
+  width: 245px;
+  min-width: 245px;
   background: var(--surface-abyssal);
   border-right: 1px solid var(--border-slate-800);
   display: flex;
@@ -66,9 +66,9 @@ body {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 6px 10px 24px 10px;
+  padding: 6px 10px 20px 10px;
   border-bottom: 1px solid var(--border-slate-800);
-  margin-bottom: 16px;
+  margin-bottom: 12px;
 }
 
 .brand-icon {
@@ -100,6 +100,42 @@ body {
   text-transform: uppercase;
 }
 
+/* Guest Sidebar Pill */
+.guest-sidebar-pill {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  margin-bottom: 12px;
+  background: rgba(245, 158, 11, 0.1);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.guest-sidebar-pill:hover {
+  background: rgba(245, 158, 11, 0.18);
+  border-color: rgba(245, 158, 11, 0.5);
+  transform: translateY(-1px);
+}
+
+.guest-dot {
+  font-size: 0.9rem;
+}
+
+.guest-text strong {
+  display: block;
+  font-size: 0.78rem;
+  color: #FCD34D;
+}
+
+.guest-text small {
+  display: block;
+  font-size: 0.7rem;
+  color: #FDE68A;
+}
+
 nav {
   display: flex;
   flex-direction: column;
@@ -115,7 +151,7 @@ nav {
   border: 1px solid transparent;
   color: var(--text-slate-400);
   font-family: var(--font-body);
-  font-size: 0.92rem;
+  font-size: 0.9rem;
   font-weight: 500;
   padding: 10px 14px;
   border-radius: 12px;
@@ -208,7 +244,7 @@ nav {
 
 .pane-header h3 {
   font-family: var(--font-heading);
-  font-size: 1.6rem;
+  font-size: 1.55rem;
   font-weight: 600;
   color: var(--text-pure-white);
   letter-spacing: -0.025em;
@@ -217,11 +253,11 @@ nav {
 
 .pane-header p {
   color: var(--text-slate-400);
-  font-size: 0.92rem;
+  font-size: 0.9rem;
   line-height: 1.5;
 }
 
-/* Toast */
+/* Toast Notice */
 .toast-notice {
   position: fixed;
   top: 20px;
@@ -261,7 +297,7 @@ nav {
 }
 
 .card-subtext {
-  font-size: 0.86rem;
+  font-size: 0.85rem;
   color: var(--text-slate-400);
   margin-bottom: 16px;
   line-height: 1.4;
@@ -284,13 +320,6 @@ nav {
   margin-bottom: 8px;
 }
 
-.optional-tag {
-  font-size: 0.72rem;
-  color: var(--text-slate-500);
-  font-weight: 400;
-  margin-left: 6px;
-}
-
 .field-hint {
   display: block;
   font-size: 0.78rem;
@@ -301,7 +330,8 @@ nav {
 input[type="text"],
 input[type="number"],
 input[type="email"],
-input[type="password"] {
+input[type="password"],
+select {
   width: 100%;
   background: var(--surface-mineral);
   border: 1px solid var(--border-slate-800);
@@ -314,7 +344,7 @@ input[type="password"] {
   transition: all 0.2s ease;
 }
 
-input:focus {
+input:focus, select:focus {
   border-color: var(--accent-aqua);
   box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.2);
 }
@@ -409,7 +439,7 @@ input:focus {
   letter-spacing: 0.04em;
 }
 
-/* Choice Cards (Grid for Reminders & Cups) */
+/* Choice Cards */
 .interval-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -418,6 +448,14 @@ input:focus {
 
 .cup-grid {
   grid-template-columns: repeat(4, 1fr);
+}
+
+.themes-grid {
+  grid-template-columns: repeat(4, 1fr);
+}
+
+.positions-grid {
+  grid-template-columns: repeat(2, 1fr);
 }
 
 .choice-card {
@@ -448,7 +486,7 @@ input:focus {
 }
 
 .choice-val {
-  font-size: 1.05rem;
+  font-size: 1rem;
   font-weight: 700;
   color: var(--text-pure-white);
 }
@@ -465,6 +503,13 @@ input:focus {
 .cup-icon {
   font-size: 1.4rem;
   margin-bottom: 2px;
+}
+
+.theme-color-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  margin-bottom: 4px;
 }
 
 /* Checkbox Row */
@@ -536,6 +581,24 @@ input:focus {
   background: #F1F5F9;
   transform: translateY(-1px);
   box-shadow: 0 4px 14px rgba(255, 255, 255, 0.2);
+}
+
+.btn-secondary {
+  background: var(--surface-mineral);
+  color: var(--text-slate-300);
+  border: 1px solid var(--border-slate-800);
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  font-weight: 600;
+  padding: 10px 20px;
+  border-radius: 9999px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text-pure-white);
 }
 
 .btn-accent {
@@ -782,6 +845,26 @@ input:focus {
   background: rgba(52, 211, 153, 0.1);
 }
 
+/* Guest Warning Card */
+.guest-warning-card {
+  display: flex;
+  gap: 18px;
+  align-items: flex-start;
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.08), var(--surface-abyssal));
+  border-color: rgba(245, 158, 11, 0.3);
+}
+
+.guest-banner-icon {
+  font-size: 2rem;
+}
+
+/* Account Info Row */
+.account-info-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
 /* About Card */
 .about-card {
   display: flex;
@@ -803,4 +886,365 @@ input:focus {
   border: 1px solid rgba(52, 211, 153, 0.2);
   padding: 4px 12px;
   border-radius: 9999px;
+}
+
+/* -------------------------------------------------------------
+   ONBOARDING & FIRST LAUNCH CONTAINER STYLES
+   ------------------------------------------------------------- */
+.onboarding-container {
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(circle at 50% 20%, rgba(56, 189, 248, 0.08), transparent 70%),
+              radial-gradient(circle at 80% 80%, rgba(52, 211, 153, 0.05), transparent 60%),
+              var(--canvas-base);
+  padding: 24px;
+  overflow-y: auto;
+}
+
+.onboarding-box {
+  width: 100%;
+  max-width: 780px;
+  background: var(--surface-abyssal);
+  border: 1px solid var(--border-slate-800);
+  border-radius: 24px;
+  padding: 36px 40px;
+  box-shadow: 0 30px 60px rgba(0, 0, 0, 0.7);
+}
+
+.wizard-box {
+  max-width: 680px;
+  padding: 32px 36px;
+}
+
+.brand-center {
+  text-align: center;
+  margin-bottom: 28px;
+}
+
+.brand-icon-large {
+  width: 60px;
+  height: 60px;
+  background: rgba(56, 189, 248, 0.12);
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  border-radius: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 16px auto;
+  box-shadow: 0 8px 24px rgba(56, 189, 248, 0.2);
+}
+
+.brand-center h2 {
+  font-family: var(--font-heading);
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: var(--text-pure-white);
+  letter-spacing: -0.025em;
+  margin-bottom: 6px;
+}
+
+.brand-center p {
+  color: var(--text-slate-400);
+  font-size: 0.95rem;
+  max-width: 480px;
+  margin: 0 auto;
+}
+
+/* Auth Choice Cards */
+.auth-choice-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+}
+
+.auth-card {
+  background: var(--surface-mineral);
+  border: 1px solid var(--border-slate-800);
+  border-radius: 18px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.auth-card-header {
+  margin-bottom: 18px;
+}
+
+.auth-badge {
+  font-size: 0.7rem;
+  font-family: var(--font-mono);
+  color: var(--accent-aqua);
+  background: rgba(56, 189, 248, 0.1);
+  border: 1px solid rgba(56, 189, 248, 0.2);
+  padding: 3px 8px;
+  border-radius: 9999px;
+  display: inline-block;
+  margin-bottom: 10px;
+}
+
+.guest-badge {
+  color: var(--accent-emerald);
+  background: rgba(52, 211, 153, 0.1);
+  border-color: rgba(52, 211, 153, 0.25);
+}
+
+.auth-card h3 {
+  font-family: var(--font-heading);
+  font-size: 1.15rem;
+  color: var(--text-pure-white);
+  margin-bottom: 6px;
+}
+
+.auth-card p {
+  font-size: 0.82rem;
+  color: var(--text-slate-400);
+  line-height: 1.4;
+}
+
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.input-field {
+  width: 100%;
+  background: var(--surface-abyssal);
+  border: 1px solid var(--border-slate-800);
+  color: var(--text-pure-white);
+  font-size: 0.9rem;
+  padding: 10px 14px;
+  border-radius: 10px;
+  outline: none;
+}
+
+.input-field:focus {
+  border-color: var(--accent-aqua);
+}
+
+.guest-perks {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 24px;
+  font-size: 0.82rem;
+  color: var(--text-slate-300);
+}
+
+.error-text {
+  color: #F87171;
+  font-size: 0.78rem;
+  margin: 0;
+}
+
+/* Wizard Steps */
+.wizard-progress {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 24px;
+  font-size: 0.8rem;
+  font-family: var(--font-mono);
+}
+
+.step-dot {
+  color: var(--text-slate-500);
+  padding: 4px 10px;
+  border-radius: 9999px;
+  border: 1px solid transparent;
+}
+
+.step-dot.active {
+  color: var(--accent-aqua);
+  border-color: rgba(56, 189, 248, 0.3);
+  background: rgba(56, 189, 248, 0.1);
+  font-weight: 600;
+}
+
+.step-line {
+  width: 20px;
+  height: 1px;
+  background: var(--border-slate-800);
+}
+
+.wizard-step h2 {
+  font-family: var(--font-heading);
+  font-size: 1.45rem;
+  color: var(--text-pure-white);
+  margin-bottom: 4px;
+}
+
+.wizard-subtitle {
+  color: var(--text-slate-400);
+  font-size: 0.88rem;
+  margin-bottom: 20px;
+}
+
+/* Computed Goal Banner */
+.computed-banner {
+  background: linear-gradient(135deg, rgba(56, 189, 248, 0.1) 0%, rgba(12, 20, 31, 0.8) 100%);
+  border: 1px solid rgba(56, 189, 248, 0.25);
+  border-radius: 14px;
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 18px 0;
+}
+
+.computed-label {
+  font-size: 0.82rem;
+  font-family: var(--font-mono);
+  color: var(--accent-aqua);
+  text-transform: uppercase;
+  display: block;
+}
+
+.computed-sub {
+  font-size: 0.78rem;
+  color: var(--text-slate-400);
+}
+
+.computed-val {
+  font-family: var(--font-heading);
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: var(--text-pure-white);
+}
+
+.computed-val small {
+  font-size: 0.9rem;
+  color: var(--accent-aqua);
+}
+
+.flex-buttons {
+  display: flex;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.flex-1 {
+  flex: 1;
+}
+
+.mt-4 {
+  margin-top: 16px;
+}
+
+/* Sidebar Footer & Auth Badges */
+.sidebar-footer {
+  margin-top: auto;
+  padding-top: 14px;
+  border-top: 1px solid var(--border-slate-800);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sidebar-account-section {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.user-mini-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
+  background: var(--surface-mineral);
+  border: 1px solid var(--border-slate-800);
+  border-radius: 8px;
+}
+
+.user-email-text {
+  font-size: 0.72rem;
+  font-family: var(--font-mono);
+  color: var(--text-slate-300);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.btn-sidebar-logout {
+  background: rgba(244, 63, 94, 0.12);
+  border: 1px solid rgba(244, 63, 94, 0.25);
+  color: #FB7185;
+  font-size: 0.75rem;
+  padding: 6px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-family: var(--font-mono);
+  transition: all 0.2s ease;
+  width: 100%;
+  text-align: center;
+}
+
+.btn-sidebar-logout:hover {
+  background: rgba(244, 63, 94, 0.2);
+  color: #FFF;
+}
+
+.btn-sidebar-login {
+  background: var(--surface-mineral);
+  border: 1px solid var(--border-slate-800);
+  color: var(--accent-aqua);
+  font-size: 0.75rem;
+  padding: 6px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-family: var(--font-mono);
+  transition: all 0.2s ease;
+  width: 100%;
+  text-align: center;
+}
+
+.btn-sidebar-login:hover {
+  border-color: var(--accent-aqua);
+  color: #FFF;
+}
+
+/* Quick Fill Buttons on Login Screen */
+.quick-test-creds {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border-slate-800);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.quick-creds-label {
+  font-size: 0.72rem;
+  font-family: var(--font-mono);
+  color: var(--text-slate-400);
+  text-transform: uppercase;
+}
+
+.quick-creds-btns {
+  display: flex;
+  gap: 8px;
+}
+
+.btn-quick-cred {
+  flex: 1;
+  background: var(--surface-mineral);
+  border: 1px solid var(--border-slate-800);
+  color: var(--accent-aqua);
+  font-size: 0.75rem;
+  padding: 6px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-family: var(--font-mono);
+  transition: all 0.2s;
+}
+
+.btn-quick-cred:hover {
+  border-color: var(--accent-aqua);
+  color: #FFF;
 }

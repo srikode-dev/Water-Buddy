@@ -1,7 +1,7 @@
 import { net } from 'electron';
 import { store } from './store.js';
 
-const API_URL = 'https://water-buddy-r8ur.onrender.com/api';
+const API_URL = process.env.API_URL || 'http://localhost:5000/api';
 
 export async function syncData() {
   const token = store.get('authToken');

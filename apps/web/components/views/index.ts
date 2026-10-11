@@ -3,3 +3,7 @@ export * from "./architecture";
 export * from "./pricing";
 export * from "./contact";
 export * from "./design-system";
+export * from "./auth";
+export * from "./WebOnboardingView";
+export * from "./AccountView";
+export * from "./AdminView";

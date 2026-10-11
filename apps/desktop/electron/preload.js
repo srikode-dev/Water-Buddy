@@ -14,6 +14,11 @@ contextBridge.exposeInMainWorld('electronAPI', {
   },
   setAuthToken: (token) => ipcRenderer.invoke('set-auth-token', token),
   getAuthToken: () => ipcRenderer.invoke('get-auth-token'),
+  saveLogs: (logs) => ipcRenderer.invoke('save-logs', logs),
+  getGuestLogs: () => ipcRenderer.invoke('get-guest-logs'),
+  saveGuestLogs: (logs) => ipcRenderer.invoke('save-guest-logs', logs),
+  clearAuth: () => ipcRenderer.invoke('clear-auth'),
   triggerTestReminder: () => ipcRenderer.send('trigger-test-reminder'),
-  hideOverlay: () => ipcRenderer.send('hide-overlay')
+  hideOverlay: () => ipcRenderer.send('hide-overlay'),
+  openExternal: (url) => ipcRenderer.send('open-external', url)
 });
