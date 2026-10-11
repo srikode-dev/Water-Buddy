@@ -1,18 +1,22 @@
-import { net } from 'electron';
 import { store } from './store.js';
 
 const API_URL = process.env.API_URL || 'http://localhost:5000/api';
 
-export async function syncData() {
+export async function syncData(options = {}) {
   const token = store.get('authToken');
-  if (!token) return; // User not logged in
+  if (!token) return { success: false, reason: 'unauthenticated' };
 
   const settings = store.get('settings');
   const logs = store.get('logs') || [];
   const unsyncedLogs = logs.filter(log => !log.synced);
 
-  if (unsyncedLogs.length === 0 && !store.get('settingsDirty')) {
-    return; // Nothing to sync
+  if (!options.force && unsyncedLogs.length === 0 && !store.get('settingsDirty')) {
+    return {
+      success: true,
+      message: 'Up to date',
+      lastSync: store.get('lastSyncTime') || new Date().toISOString(),
+      logs
+    };
   }
 
   try {
@@ -27,30 +31,64 @@ export async function syncData() {
 
     if (response.ok) {
       const data = await response.json();
-      
-      // Mark synced
+      const lastSyncTime = new Date().toISOString();
+      store.set('lastSyncTime', lastSyncTime);
+
+      // Mark local logs as synced
       const updatedLogs = logs.map(log => ({
         ...log,
         synced: true
       }));
-      store.set('logs', updatedLogs);
+
+      // Merge server logs cleanly without duplicates
+      let mergedLogs = [...updatedLogs];
+      if (data.logs && Array.isArray(data.logs)) {
+        for (const sLog of data.logs) {
+          const sId = sLog.logId || sLog._id?.toString();
+          const exists = mergedLogs.some(l => 
+            l.id === sId || 
+            (Math.abs(new Date(l.timestamp).getTime() - new Date(sLog.timestamp).getTime()) < 2000 && l.amount === sLog.amountMl)
+          );
+          if (!exists) {
+            mergedLogs.push({
+              id: sId || Date.now().toString(),
+              timestamp: sLog.timestamp,
+              amount: sLog.amountMl,
+              response: sLog.response,
+              beverageType: sLog.beverageType || 'water',
+              synced: true
+            });
+          }
+        }
+      }
+
+      store.set('logs', mergedLogs);
       store.set('settingsDirty', false);
 
-      // Override local settings if server had newer (simplified for MVP)
-      if (data.settings) {
-        // store.set('settings', data.settings);
-      }
+      return {
+        success: true,
+        lastSync: lastSyncTime,
+        logs: mergedLogs,
+        syncedCount: data.syncedLogsCount || 0
+      };
     } else {
       console.error('Sync failed:', response.statusText);
+      return { success: false, error: response.statusText };
     }
   } catch (err) {
     console.error('Sync network error:', err);
+    return { success: false, error: err.message };
   }
+}
+
+export function getLastSyncTime() {
+  return store.get('lastSyncTime');
 }
 
 export function startSyncService() {
   // Sync every 5 minutes
-  setInterval(syncData, 5 * 60 * 1000);
-  // And sync once on startup
-  setTimeout(syncData, 5000);
+  setInterval(() => syncData({ force: false }), 5 * 60 * 1000);
+  // And sync once on startup after 3 seconds
+  setTimeout(() => syncData({ force: false }), 3000);
 }
+

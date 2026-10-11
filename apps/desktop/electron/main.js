@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain, screen, Notification, shell } from 'electron';
+import { app, BrowserWindow, ipcMain, screen, Notification, shell, Menu } from 'electron';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { startScheduler } from './scheduler.js';
@@ -39,31 +39,8 @@ function getOverlayPosition(pos = 'bottom-right') {
 
 function triggerNotification() {
   const settings = store.get('settings') || {};
-  const cup = settings.manualSipMl || 150;
-  const iconPath = path.join(__dirname, '../public/icon.png');
 
-  // 1. Native Windows Notification Toast
-  if (Notification.isSupported()) {
-    try {
-      const notif = new Notification({
-        title: 'Water Buddy',
-        body: `Time to drink water! Have a glass (${cup} ml) to stay hydrated.`,
-        icon: iconPath,
-        silent: settings.soundOn === false
-      });
-      notif.on('click', () => {
-        if (settingsWindow && !settingsWindow.isDestroyed()) {
-          settingsWindow.show();
-          settingsWindow.focus();
-        }
-      });
-      notif.show();
-    } catch (err) {
-      console.error('Notification error:', err);
-    }
-  }
-
-  // 2. Interactive Desktop HUD Overlay Widget
+  // Interactive Desktop HUD Overlay Widget (Custom Water Buddy Widget Only)
   if (overlayWindow && !overlayWindow.isDestroyed()) {
     const { posX, posY, overlayWidth, overlayHeight } = getOverlayPosition(settings.notificationPosition);
     overlayWindow.setBounds({ x: posX, y: posY, width: overlayWidth, height: overlayHeight });
@@ -75,6 +52,9 @@ function triggerNotification() {
 }
 
 function createWindows() {
+  // Completely remove native Windows application menu bar (File Edit View Window)
+  Menu.setApplicationMenu(null);
+
   const settings = store.get('settings') || {};
   const { posX, posY, overlayWidth, overlayHeight } = getOverlayPosition(settings.notificationPosition);
 
@@ -101,10 +81,11 @@ function createWindows() {
   const iconPath = path.join(__dirname, '../public/icon.png');
 
   settingsWindow = new BrowserWindow({
-    width: 920,
-    height: 680,
-    minWidth: 800,
-    minHeight: 580,
+    width: 980,
+    height: 720,
+    minWidth: 840,
+    minHeight: 600,
+    frame: false, // Custom frameless window — removes the default Windows OS title bar!
     backgroundColor: '#070F19',
     icon: iconPath,
     title: 'Water Buddy',
@@ -113,6 +94,9 @@ function createWindows() {
       contextIsolation: true,
     },
   });
+
+  settingsWindow.setMenuBarVisibility(false);
+  settingsWindow.removeMenu();
 
   if (isDev) {
     overlayWindow.loadURL('http://localhost:5173/overlay.html');
@@ -167,6 +151,36 @@ app.whenReady().then(() => {
     }
   });
 
+  // Custom Frameless Window Controls
+  ipcMain.on('window-minimize', () => {
+    if (settingsWindow && !settingsWindow.isDestroyed()) {
+      settingsWindow.minimize();
+    }
+  });
+
+  ipcMain.on('window-maximize', () => {
+    if (settingsWindow && !settingsWindow.isDestroyed()) {
+      if (settingsWindow.isMaximized()) {
+        settingsWindow.unmaximize();
+      } else {
+        settingsWindow.maximize();
+      }
+    }
+  });
+
+  ipcMain.on('window-close', () => {
+    if (settingsWindow && !settingsWindow.isDestroyed()) {
+      settingsWindow.hide();
+    }
+  });
+
+  ipcMain.handle('window-is-maximized', () => {
+    if (settingsWindow && !settingsWindow.isDestroyed()) {
+      return settingsWindow.isMaximized();
+    }
+    return false;
+  });
+
   ipcMain.handle('get-settings', () => store.get('settings'));
   ipcMain.handle('save-settings', (event, newSettings) => {
     store.set('settings', newSettings);
@@ -185,12 +199,29 @@ app.whenReady().then(() => {
   ipcMain.handle('get-auth-token', () => store.get('authToken'));
   ipcMain.handle('set-auth-token', (event, token) => store.set('authToken', token));
   ipcMain.handle('clear-auth', () => store.set('authToken', null));
+  ipcMain.handle('sync-now', async () => syncData({ force: true }));
+  ipcMain.handle('get-last-sync', () => store.get('lastSyncTime'));
 
   ipcMain.on('log-water', (event, data) => {
     const logs = store.get('logs') || [];
+    const now = Date.now();
+
+    // Deduplication check: if an entry with identical ID or recent timestamp (< 1.5s) exists
+    if (data.id && logs.some(l => l.id === data.id)) {
+      return;
+    }
+    const isRecentDuplicate = logs.some(l => 
+      Math.abs(now - new Date(l.timestamp).getTime()) < 1500 &&
+      l.amount === data.amount &&
+      l.beverageType === data.beverageType
+    );
+    if (isRecentDuplicate) {
+      return;
+    }
+
     const newLog = {
-      id: Date.now().toString(),
-      timestamp: new Date().toISOString(),
+      id: data.id || now.toString(),
+      timestamp: data.timestamp || new Date().toISOString(),
       ...data,
       synced: false
     };

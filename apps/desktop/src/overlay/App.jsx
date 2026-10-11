@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { playChimeByName, playBasaltDrop } from '../utils/audio.js';
 import './index.css';
 
 function App() {
@@ -8,31 +9,12 @@ function App() {
   const [dailyGoal, setDailyGoal] = useState(2500);
   const [sipAmount, setSipAmount] = useState(150);
   const [soundEnabled, setSoundEnabled] = useState(true);
+  const [chimeTone, setChimeTone] = useState('icelandic');
+  const [chimeVolume, setChimeVolume] = useState(0.75);
   const [theme, setTheme] = useState('oceanic'); // 'oceanic' | 'emerald' | 'obsidian' | 'neon'
   const [hasAnswered, setHasAnswered] = useState(false);
   const [feedbackText, setFeedbackText] = useState('');
   const autoHideTimerRef = useRef(null);
-
-  // Play gentle water chime using Web Audio API
-  const playSound = (freq1 = 520, freq2 = 780) => {
-    if (!soundEnabled) return;
-    try {
-      const ctx = new (window.AudioContext || window.webkitAudioContext)();
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-      osc.type = 'sine';
-      osc.frequency.setValueAtTime(freq1, ctx.currentTime);
-      osc.frequency.exponentialRampToValueAtTime(freq2, ctx.currentTime + 0.12);
-      gain.gain.setValueAtTime(0.3, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.25);
-      osc.start();
-      osc.stop(ctx.currentTime + 0.25);
-    } catch (e) {
-      // AudioContext policy safe fallback
-    }
-  };
 
   const loadStats = async () => {
     if (window.electronAPI) {
@@ -42,11 +24,15 @@ function App() {
       const cup = settings.manualSipMl || 150;
       const sound = settings.soundOn !== false;
       const activeTheme = settings.notificationTheme || 'oceanic';
+      const tone = settings.chimeTone || 'icelandic';
+      const vol = settings.chimeVolume !== undefined ? settings.chimeVolume : 0.75;
       
       setDailyGoal(goal);
       setSipAmount(cup);
       setSoundEnabled(sound);
       setTheme(activeTheme);
+      setChimeTone(tone);
+      setChimeVolume(vol);
 
       const todayStr = new Date().toDateString();
       const todayLogs = logs.filter(l => l.response === 'yes' && new Date(l.timestamp).toDateString() === todayStr);
@@ -68,13 +54,21 @@ function App() {
     loadStats();
 
     if (window.electronAPI && window.electronAPI.onTriggerWalk) {
-      window.electronAPI.onTriggerWalk(() => {
-        loadStats();
+      window.electronAPI.onTriggerWalk(async () => {
+        const settings = (await window.electronAPI.getSettings()) || {};
+        const activeSound = settings.soundOn !== false;
+        const activeTone = settings.chimeTone || 'icelandic';
+        const activeVol = settings.chimeVolume !== undefined ? settings.chimeVolume : 0.75;
+
+        await loadStats();
         setHasAnswered(false);
         setFeedbackText('');
         setIsVisible(true);
-        // Play gentle chime when popup appears
-        playSound(440, 660);
+
+        // Play exactly one configured chime tone
+        if (activeSound) {
+          playChimeByName(activeTone, activeVol);
+        }
       });
     }
   }, []);
@@ -93,7 +87,9 @@ function App() {
   const handleResponse = (drank, beverageType = 'water', multiplier = 1) => {
     setHasAnswered(true);
     if (drank) {
-      playSound(580, 880);
+      if (soundEnabled) {
+        playBasaltDrop(chimeVolume * 0.8);
+      }
       const amount = Math.round(sipAmount * multiplier);
       const newConsumed = currentConsumed + amount;
       setCurrentConsumed(newConsumed);

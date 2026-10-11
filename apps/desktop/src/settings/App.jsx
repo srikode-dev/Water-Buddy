@@ -1,6 +1,44 @@
 import React, { useState, useEffect } from 'react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
+import { playChimeByName, playBasaltDrop, playIcelandicChime, playOceanRipple, playSingingBowl } from '../utils/audio.js';
 import './index.css';
+
+// Deduplicate helper: cleans identical logs created in the same time window or with matching ID
+function deduplicateLogs(rawLogs) {
+  if (!Array.isArray(rawLogs)) return [];
+  const deduped = [];
+  for (const log of rawLogs) {
+    if (!log) continue;
+    const logTime = new Date(log.timestamp).getTime();
+    const exists = deduped.some(existing => {
+      if (existing.id && log.id && existing.id === log.id) return true;
+      const existingTime = new Date(existing.timestamp).getTime();
+      return Math.abs(existingTime - logTime) < 2500 &&
+             existing.amount === log.amount &&
+             (existing.beverageType || 'water') === (log.beverageType || 'water');
+    });
+    if (!exists) {
+      deduped.push(log);
+    }
+  }
+  return deduped;
+}
+
+function formatRelativeTime(isoString) {
+  if (!isoString) return 'Not synced yet';
+  try {
+    const date = new Date(isoString);
+    const now = new Date();
+    const diffSec = Math.floor((now.getTime() - date.getTime()) / 1000);
+    if (diffSec < 15) return 'Just now';
+    if (diffSec < 60) return `${diffSec} seconds ago`;
+    const diffMin = Math.floor(diffSec / 60);
+    if (diffMin < 60) return `${diffMin} min${diffMin > 1 ? 's' : ''} ago`;
+    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  } catch (e) {
+    return 'Recently';
+  }
+}
 
 function App() {
   const [settings, setSettings] = useState({
@@ -16,6 +54,10 @@ function App() {
     intervalMin: 45,
     manualSipMl: 150,
     soundOn: true,
+    chimeTone: 'icelandic',
+    chimeVolume: 0.75,
+    activeHoursStart: '08:00',
+    activeHoursEnd: '22:00',
     launchOnStartup: true,
     focusMode: false,
     notificationTheme: 'oceanic',
@@ -30,6 +72,10 @@ function App() {
   const [temp, setTemp] = useState(null);
   const [saveNotice, setSaveNotice] = useState(false);
   const [testNotice, setTestNotice] = useState(false);
+  const [lastSyncTime, setLastSyncTime] = useState(null);
+  const [isSyncing, setIsSyncing] = useState(false);
+  const [syncNotice, setSyncNotice] = useState('');
+  const [customMlInput, setCustomMlInput] = useState('');
 
   // First-launch login state
   const [loginEmail, setLoginEmail] = useState('');
@@ -48,18 +94,33 @@ function App() {
             ...prev,
             ...s,
             soundOn: s.soundOn !== undefined ? s.soundOn : true,
+            chimeTone: s.chimeTone || 'icelandic',
+            chimeVolume: s.chimeVolume !== undefined ? s.chimeVolume : 0.75,
             manualSipMl: s.manualSipMl || 150,
             intervalMin: s.intervalMin || 45,
+            activeHoursStart: s.activeHoursStart || '08:00',
+            activeHoursEnd: s.activeHoursEnd || '22:00',
             notificationTheme: s.notificationTheme || 'oceanic',
             notificationPosition: s.notificationPosition || 'bottom-right'
           }));
+          if (s.manualSipMl) {
+            setCustomMlInput(s.manualSipMl.toString());
+          }
         }
       });
+
       window.electronAPI.getLogs().then(l => {
-        if (l) setLogs(l);
+        if (l) setLogs(deduplicateLogs(l));
       });
+
+      if (window.electronAPI.getLastSync) {
+        window.electronAPI.getLastSync().then(t => {
+          if (t) setLastSyncTime(t);
+        });
+      }
+
       window.electronAPI.onSyncLog((newLog) => {
-        setLogs(prev => [...prev, newLog]);
+        setLogs(prev => deduplicateLogs([...prev, newLog]));
       });
     }
 
@@ -114,7 +175,6 @@ function App() {
     setIsSubmitting(true);
 
     try {
-      // 1. If currently in guest mode, save guest logs to guest_logs store
       if (settings.authMode === 'guest' && window.electronAPI && window.electronAPI.saveGuestLogs) {
         await window.electronAPI.saveGuestLogs(logs);
       }
@@ -129,7 +189,6 @@ function App() {
       if (res.ok && data.token) {
         const user = data.user || {};
 
-        // 2. Fetch logged-in user's real logs from MongoDB database
         let userLogs = [];
         try {
           const logsRes = await fetch('http://localhost:5000/api/sync/logs', {
@@ -152,10 +211,10 @@ function App() {
           console.warn('Could not fetch user logs from database', lErr);
         }
 
-        // 3. Set logs state to user's database logs
-        setLogs(userLogs);
+        const dedupedUserLogs = deduplicateLogs(userLogs);
+        setLogs(dedupedUserLogs);
         if (window.electronAPI && window.electronAPI.saveLogs) {
-          await window.electronAPI.saveLogs(userLogs);
+          await window.electronAPI.saveLogs(dedupedUserLogs);
         }
 
         const newSettings = {
@@ -188,14 +247,14 @@ function App() {
   };
 
   const handleContinueAsGuest = async () => {
-    // Load existing guest logs if available
     let guestLogs = [];
     if (window.electronAPI && window.electronAPI.getGuestLogs) {
       guestLogs = await window.electronAPI.getGuestLogs();
     }
-    setLogs(guestLogs || []);
+    const dedupedGuestLogs = deduplicateLogs(guestLogs || []);
+    setLogs(dedupedGuestLogs);
     if (window.electronAPI && window.electronAPI.saveLogs) {
-      await window.electronAPI.saveLogs(guestLogs || []);
+      await window.electronAPI.saveLogs(dedupedGuestLogs);
     }
 
     const newSettings = {
@@ -209,7 +268,6 @@ function App() {
   };
 
   const handleLogout = async () => {
-    // Retrieve guest logs for the guest session
     let guestLogs = [];
     if (window.electronAPI && window.electronAPI.getGuestLogs) {
       guestLogs = await window.electronAPI.getGuestLogs();
@@ -224,14 +282,15 @@ function App() {
       onboardingComplete: false
     };
 
-    setLogs(guestLogs || []);
+    const deduped = deduplicateLogs(guestLogs || []);
+    setLogs(deduped);
     setSettings(newSettings);
 
     if (window.electronAPI) {
       await window.electronAPI.clearAuth();
       await window.electronAPI.saveSettings(newSettings);
       if (window.electronAPI.saveLogs) {
-        await window.electronAPI.saveLogs(guestLogs || []);
+        await window.electronAPI.saveLogs(deduped);
       }
     }
   };
@@ -245,13 +304,74 @@ function App() {
   };
 
   const handleLogQuickWater = (amount, beverageType = 'water') => {
+    const parsedAmount = parseInt(amount, 10) || 150;
+    const newLog = {
+      id: Date.now().toString(),
+      timestamp: new Date().toISOString(),
+      response: 'yes',
+      amount: parsedAmount,
+      beverageType,
+      hydrationMultiplier: beverageType === 'coffee' ? 0.5 : beverageType === 'tea' ? 0.8 : 1,
+      synced: false
+    };
+
+    // Play subtle splash feedback
+    if (settings.soundOn) {
+      playBasaltDrop(settings.chimeVolume * 0.7);
+    }
+
+    // Update state once with deduplication protection
+    setLogs(prev => deduplicateLogs([...prev, newLog]));
+
     if (window.electronAPI && window.electronAPI.logWater) {
-      window.electronAPI.logWater({
-        response: 'yes',
-        amount,
-        beverageType,
-        hydrationMultiplier: beverageType === 'coffee' ? 0.5 : beverageType === 'tea' ? 0.8 : 1
-      });
+      window.electronAPI.logWater(newLog);
+    }
+  };
+
+  const handleDeleteLog = async (logId) => {
+    const updated = logs.filter(l => l.id !== logId);
+    setLogs(updated);
+    if (window.electronAPI && window.electronAPI.saveLogs) {
+      await window.electronAPI.saveLogs(updated);
+    }
+  };
+
+  const handleCleanDuplicates = async () => {
+    const deduped = deduplicateLogs(logs);
+    setLogs(deduped);
+    if (window.electronAPI && window.electronAPI.saveLogs) {
+      await window.electronAPI.saveLogs(deduped);
+    }
+    setSyncNotice('✓ Cleaned up duplicate log entries!');
+    setTimeout(() => setSyncNotice(''), 3000);
+  };
+
+  const handleSyncNow = async () => {
+    if (!window.electronAPI || !window.electronAPI.syncNow) return;
+    setIsSyncing(true);
+    setSyncNotice('Connecting to Water Buddy Cloud...');
+
+    try {
+      const res = await window.electronAPI.syncNow();
+      if (res && res.success) {
+        const newTime = res.lastSync || new Date().toISOString();
+        setLastSyncTime(newTime);
+        if (res.logs) {
+          setLogs(deduplicateLogs(res.logs));
+        }
+        setSyncNotice(`✓ Cloud sync complete (${res.syncedCount || 0} entries updated)`);
+      } else {
+        if (res?.reason === 'unauthenticated') {
+          setSyncNotice('⚠️ Offline mode: Sign in to sync with cloud.');
+        } else {
+          setSyncNotice('⚠️ Sync failed: Backend unreachable.');
+        }
+      }
+    } catch (err) {
+      setSyncNotice('⚠️ Sync error: ' + err.message);
+    } finally {
+      setIsSyncing(false);
+      setTimeout(() => setSyncNotice(''), 4000);
     }
   };
 
@@ -263,6 +383,10 @@ function App() {
     }
   };
 
+  const handlePreviewChime = (tone) => {
+    playChimeByName(tone, settings.chimeVolume);
+  };
+
   const openWebPortal = () => {
     if (window.electronAPI && window.electronAPI.openExternal) {
       window.electronAPI.openExternal('http://localhost:3000');
@@ -272,7 +396,7 @@ function App() {
   };
 
   const todayStr = new Date().toDateString();
-  const todayLogs = logs.filter(l => l.response === 'yes' && new Date(l.timestamp).toDateString() === todayStr);
+  const todayLogs = deduplicateLogs(logs).filter(l => l.response === 'yes' && new Date(l.timestamp).toDateString() === todayStr);
   const totalDrankToday = todayLogs.reduce((sum, log) => sum + (log.amount || 0), 0);
   const effectiveGoal = (settings.dailyGoal || 2450) + weatherBoost;
   const progressPercent = Math.min(Math.round((totalDrankToday / effectiveGoal) * 100), 100);
@@ -296,30 +420,83 @@ function App() {
     };
   });
 
+  // Custom Frameless Window Titlebar
+  const renderTitlebar = () => (
+    <header className="custom-titlebar">
+      <div className="titlebar-drag-region">
+        <div className="titlebar-brand">
+          <div className="titlebar-droplet">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#38BDF8" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z" />
+            </svg>
+          </div>
+          <span className="titlebar-title">Water Buddy</span>
+          <span className="titlebar-badge">Abyssal Edition</span>
+        </div>
+      </div>
+
+      <div className="titlebar-actions">
+        <button
+          type="button"
+          className="titlebar-btn btn-win-min"
+          onClick={() => window.electronAPI?.minimizeWindow?.()}
+          title="Minimize"
+        >
+          <svg width="10" height="2" viewBox="0 0 10 2">
+            <rect width="10" height="2" fill="currentColor" rx="1" />
+          </svg>
+        </button>
+        <button
+          type="button"
+          className="titlebar-btn btn-win-max"
+          onClick={() => window.electronAPI?.maximizeWindow?.()}
+          title="Maximize / Restore"
+        >
+          <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" strokeWidth="1.2">
+            <rect x="1" y="1" width="8" height="8" rx="1.5" />
+          </svg>
+        </button>
+        <button
+          type="button"
+          className="titlebar-btn btn-win-close"
+          onClick={() => window.electronAPI?.closeWindow?.()}
+          title="Close to System Tray"
+        >
+          <svg width="10" height="10" viewBox="0 0 10 10" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round">
+            <line x1="1.5" y1="1.5" x2="8.5" y2="8.5" />
+            <line x1="8.5" y1="1.5" x2="1.5" y2="8.5" />
+          </svg>
+        </button>
+      </div>
+    </header>
+  );
+
   // -------------------------------------------------------------
-  // SCREEN 1: FIRST-LAUNCH AUTH SCREEN (LOGIN OR GUEST MODE)
+  // SCREEN 1: FIRST-LAUNCH AUTH SCREEN
   // -------------------------------------------------------------
   if (!settings.authMode) {
     return (
-      <div className="onboarding-container fade-in">
-        <div className="onboarding-box">
+      <div className="app-window">
+        {renderTitlebar()}
+        <div className="onboarding-container fade-in">
+          <div className="onboarding-box glass-card">
           <div className="brand-center">
-            <div className="brand-icon-large">
-              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#38BDF8" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <div className="brand-icon-large pulse-glow">
+              <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#38BDF8" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z" />
               </svg>
             </div>
             <h2>Welcome to Water Buddy</h2>
-            <p>Your ambient desktop hydration companion. Choose how you want to start.</p>
+            <p>Your ambient desktop hydration companion. Built for deep focus and mindful hydration.</p>
           </div>
 
           <div className="auth-choice-grid">
             {/* Option A: Login */}
-            <div className="auth-card">
+            <div className="auth-card glass-surface">
               <div className="auth-card-header">
                 <span className="auth-badge">CLOUD SYNC</span>
                 <h3>Sign In with Account</h3>
-                <p>Sync your water logs across your Windows PC and mobile devices.</p>
+                <p>Sync your water logs across your Windows PC and web portal.</p>
               </div>
 
               <form onSubmit={handleLogin} className="auth-form">
@@ -341,7 +518,7 @@ function App() {
                 {loginError && <p className="error-text">{loginError}</p>}
 
                 <button type="submit" disabled={isSubmitting} className="btn-primary">
-                  {isSubmitting ? 'Signing in...' : 'Sign In & Connect'}
+                  {isSubmitting ? 'Signing in...' : 'Sign In & Connect ➔'}
                 </button>
 
                 <div className="quick-test-creds">
@@ -373,7 +550,7 @@ function App() {
             </div>
 
             {/* Option B: Guest Mode */}
-            <div className="auth-card guest-card">
+            <div className="auth-card guest-card glass-surface">
               <div className="auth-card-header">
                 <span className="auth-badge guest-badge">OFFLINE FIRST</span>
                 <h3>Continue as Guest Mode</h3>
@@ -381,15 +558,15 @@ function App() {
               </div>
 
               <div className="guest-perks">
-                <p>✓ Instant setup — no password needed</p>
-                <p>✓ Full tray companion &amp; customizable reminders</p>
+                <p>✓ Instant setup — zero sign up needed</p>
+                <p>✓ Full tray companion &amp; customizable chimes</p>
                 <p>✓ Register anytime on our web portal to sync</p>
               </div>
 
               <button 
                 type="button" 
                 onClick={handleContinueAsGuest} 
-                className="btn-accent"
+                className="btn-secondary"
               >
                 Continue as Guest ➔
               </button>
@@ -397,6 +574,7 @@ function App() {
           </div>
         </div>
       </div>
+    </div>
     );
   }
 
@@ -407,18 +585,18 @@ function App() {
     const computedGoal = computeIntake(settings.weight, settings.medicalInfo);
 
     return (
-      <div className="onboarding-container fade-in">
-        <div className="onboarding-box wizard-box">
-          {/* Wizard Progress Steps */}
+      <div className="app-window">
+        {renderTitlebar()}
+        <div className="onboarding-container fade-in">
+          <div className="onboarding-box wizard-box glass-card">
           <div className="wizard-progress">
             <span className={`step-dot ${onboardingStep >= 1 ? 'active' : ''}`}>1. Health Info</span>
             <span className="step-line"></span>
-            <span className={`step-dot ${onboardingStep >= 2 ? 'active' : ''}`}>2. Reminders</span>
+            <span className={`step-dot ${onboardingStep >= 2 ? 'active' : ''}`}>2. Reminders &amp; Chimes</span>
             <span className="step-line"></span>
             <span className={`step-dot ${onboardingStep >= 3 ? 'active' : ''}`}>3. Theme &amp; Position</span>
           </div>
 
-          {/* Step 1: Health & Biometrics */}
           {onboardingStep === 1 && (
             <div className="wizard-step fade-in">
               <h2>Step 1: Your Health &amp; Biometrics</h2>
@@ -451,8 +629,8 @@ function App() {
                   <label>Height (cm)</label>
                   <input
                     type="number"
-                    min="110"
-                    max="220"
+                    min="100"
+                    max="250"
                     value={settings.height || 170}
                     onChange={(e) => handleSave({ ...settings, height: parseInt(e.target.value) || 170 })}
                   />
@@ -461,7 +639,7 @@ function App() {
               </div>
 
               <div className="form-group">
-                <label>Medical &amp; Physical Activity Condition</label>
+                <label>Health &amp; Physical Activity Tier</label>
                 <select
                   value={settings.medicalInfo || 'Normal Healthy'}
                   onChange={(e) => handleSave({ ...settings, medicalInfo: e.target.value })}
@@ -474,43 +652,34 @@ function App() {
                 </select>
               </div>
 
-              {/* Real-time Computed Goal Banner */}
-              <div className="computed-banner">
-                <div>
-                  <span className="computed-label">Auto-Calculated Daily Water Goal</span>
-                  <span className="computed-sub">Calculated for your body and routine</span>
-                </div>
-                <div className="computed-val mono-num">
-                  {computedGoal.toLocaleString()} <small>ml / day</small>
+              <div className="card highlight-card">
+                <span className="highlight-label">Computed Daily Goal</span>
+                <div className="highlight-value">
+                  <span className="mono-num">{computedGoal.toLocaleString()}</span>
+                  <span className="unit">ml / day</span>
                 </div>
               </div>
 
-              <button 
-                type="button" 
-                onClick={() => setOnboardingStep(2)} 
-                className="btn-primary mt-4"
-              >
-                Next: Configure Reminders ➔
+              <button type="button" onClick={() => setOnboardingStep(2)} className="btn-primary mt-4">
+                Next: Reminders &amp; Chimes ➔
               </button>
             </div>
           )}
 
-          {/* Step 2: Reminders & Sip Volume */}
           {onboardingStep === 2 && (
             <div className="wizard-step fade-in">
-              <h2>Step 2: Set Your Reminders</h2>
-              <p className="wizard-subtitle">Choose how often Water Buddy reminds you and your preferred cup size.</p>
+              <h2>Step 2: Reminders &amp; Acoustic Chimes</h2>
+              <p className="wizard-subtitle">Pick reminder frequency, intake volume, and acoustic chime notification.</p>
 
               <div className="card">
-                <h4 className="card-title">How often to remind you</h4>
+                <h4 className="card-title">Reminder Frequency</h4>
                 <div className="interval-grid">
                   {[
                     { value: 1, label: '1 min', sub: 'Quick test' },
                     { value: 20, label: '20 min', sub: 'Frequent' },
                     { value: 30, label: '30 min', sub: 'Active' },
                     { value: 45, label: '45 min', sub: 'Recommended' },
-                    { value: 60, label: '60 min', sub: 'Hourly' },
-                    { value: 90, label: '90 min', sub: 'Relaxed' }
+                    { value: 60, label: '60 min', sub: 'Hourly' }
                   ].map(opt => (
                     <button
                       key={opt.value}
@@ -526,19 +695,22 @@ function App() {
               </div>
 
               <div className="card">
-                <h4 className="card-title">Your usual cup or glass size</h4>
+                <h4 className="card-title">Default Cup Volume</h4>
                 <div className="interval-grid cup-grid">
                   {[
-                    { value: 100, label: '100 ml', icon: '🥛', desc: 'Small Cup' },
-                    { value: 150, label: '150 ml', icon: '☕', desc: 'Regular Cup' },
-                    { value: 250, label: '250 ml', icon: '🧊', desc: 'Large Glass' },
-                    { value: 500, label: '500 ml', icon: '🍶', desc: 'Water Bottle' }
+                    { value: 100, label: '100 ml', icon: '🥛', desc: 'Small' },
+                    { value: 150, label: '150 ml', icon: '☕', desc: 'Regular' },
+                    { value: 250, label: '250 ml', icon: '🧊', desc: 'Glass' },
+                    { value: 500, label: '500 ml', icon: '🍶', desc: 'Bottle' }
                   ].map(cup => (
                     <button
                       key={cup.value}
                       type="button"
                       className={`choice-card ${settings.manualSipMl === cup.value ? 'selected' : ''}`}
-                      onClick={() => handleSave({ ...settings, manualSipMl: cup.value })}
+                      onClick={() => {
+                        handleSave({ ...settings, manualSipMl: cup.value });
+                        setCustomMlInput(cup.value.toString());
+                      }}
                     >
                       <span className="cup-icon">{cup.icon}</span>
                       <span className="choice-val mono-num">{cup.label}</span>
@@ -553,21 +725,19 @@ function App() {
                   ⬅ Back
                 </button>
                 <button type="button" onClick={() => setOnboardingStep(3)} className="btn-primary flex-1">
-                  Next: Notification Theme &amp; Position ➔
+                  Next: Theme &amp; Position ➔
                 </button>
               </div>
             </div>
           )}
 
-          {/* Step 3: Notification Themes & Screen Positions */}
           {onboardingStep === 3 && (
             <div className="wizard-step fade-in">
-              <h2>Step 3: Notification Style &amp; Position</h2>
-              <p className="wizard-subtitle">Choose the visual theme and where the popup should appear on your screen.</p>
+              <h2>Step 3: Theme &amp; Popup Position</h2>
+              <p className="wizard-subtitle">Choose the visual styling and screen position for your floating HUD companion.</p>
 
-              {/* Notification Themes */}
               <div className="card">
-                <h4 className="card-title">Choose Notification Theme</h4>
+                <h4 className="card-title">Choose Theme</h4>
                 <div className="interval-grid themes-grid">
                   {[
                     { id: 'oceanic', label: 'Oceanic Aqua', desc: 'Crystal Aqua glow', color: '#38BDF8' },
@@ -589,65 +759,33 @@ function App() {
                 </div>
               </div>
 
-              {/* Notification Positions */}
-              <div className="card">
-                <h4 className="card-title">Popup Screen Position</h4>
-                <div className="interval-grid positions-grid">
-                  {[
-                    { id: 'bottom-right', label: 'Bottom Right ↘', desc: 'Above clock (Recommended)' },
-                    { id: 'bottom-left', label: 'Bottom Left ↙', desc: 'Opposite corner' },
-                    { id: 'top-right', label: 'Top Right ↗', desc: 'Top notification banner' },
-                    { id: 'bottom-center', label: 'Bottom Center ⬇', desc: 'Centered floating pill' }
-                  ].map(pos => (
-                    <button
-                      key={pos.id}
-                      type="button"
-                      className={`choice-card ${settings.notificationPosition === pos.id ? 'selected' : ''}`}
-                      onClick={() => handleSave({ ...settings, notificationPosition: pos.id })}
-                    >
-                      <span className="choice-val text-sm">{pos.label}</span>
-                      <span className="choice-sub">{pos.desc}</span>
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Live Preview Button */}
-              <div className="card test-card">
-                <div className="test-left">
-                  <h4 className="card-title">Test Your Notification</h4>
-                  <p className="card-subtext">See the popup in your chosen theme and screen position right now.</p>
-                  {testNotice && <span className="test-success">✓ Notification triggered on your screen!</span>}
-                </div>
-                <button type="button" onClick={handleTestReminder} className="btn-accent">
-                  🔔 Preview Notification
-                </button>
-              </div>
-
               <div className="flex-buttons">
                 <button type="button" onClick={() => setOnboardingStep(2)} className="btn-secondary">
                   ⬅ Back
                 </button>
                 <button type="button" onClick={handleFinishOnboarding} className="btn-primary flex-1">
-                  ✓ Finish Setup &amp; Start Water Buddy
+                  ✓ Finish Setup &amp; Launch Water Buddy
                 </button>
               </div>
             </div>
           )}
         </div>
       </div>
+    </div>
     );
   }
 
   // -------------------------------------------------------------
-  // SCREEN 3: MAIN APPLICATION DASHBOARD (NORMAL APP USAGE)
+  // SCREEN 3: MAIN APPLICATION DASHBOARD
   // -------------------------------------------------------------
   return (
-    <div className="settings-layout">
-      {/* Sidebar Navigation */}
-      <aside className="sidebar">
+    <div className="app-window">
+      {renderTitlebar()}
+      <div className="settings-layout">
+        {/* Frosted Sidebar */}
+      <aside className="sidebar frosted-sidebar">
         <div className="brand">
-          <div className="brand-icon">
+          <div className="brand-icon pulse-glow">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#38BDF8" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z" />
             </svg>
@@ -663,8 +801,8 @@ function App() {
           <div className="guest-sidebar-pill" onClick={openWebPortal}>
             <span className="guest-dot">🟡</span>
             <div className="guest-text">
-              <strong>Guest Mode</strong>
-              <small>Register on Web to Sync ↗</small>
+              <strong>Guest Mode (Offline)</strong>
+              <small>Click to Register &amp; Sync ↗</small>
             </div>
           </div>
         )}
@@ -720,9 +858,25 @@ function App() {
         </nav>
 
         <div className="sidebar-footer">
-          <div className="status-pill">
-            <span className="status-dot"></span>
-            <span>Running quietly</span>
+          {/* Live Sync Status Pill */}
+          <div className="sidebar-sync-hud" onClick={handleSyncNow} title="Click to synchronize now with cloud database">
+            <div className="sync-hud-top">
+              <span className={`sync-status-dot ${isSyncing ? 'spinning-dot' : settings.authMode === 'logged_in' ? 'connected' : 'offline'}`}></span>
+              <span className="sync-status-label">
+                {isSyncing ? 'Syncing...' : settings.authMode === 'logged_in' ? 'Cloud Synced' : 'Offline Mode'}
+              </span>
+              <button 
+                type="button" 
+                className={`btn-sync-mini ${isSyncing ? 'spin-anim' : ''}`}
+                disabled={isSyncing}
+                title="Sync Now"
+              >
+                🔄
+              </button>
+            </div>
+            <span className="sync-hud-sub mono-num">
+              Last: {formatRelativeTime(lastSyncTime)}
+            </span>
           </div>
 
           {settings.authMode === 'logged_in' ? (
@@ -755,8 +909,13 @@ function App() {
       {/* Main Content Area */}
       <main className="content">
         {saveNotice && (
-          <div className="toast-notice">
-            ✓ Settings saved automatically
+          <div className="toast-notice fade-in">
+            ✓ Settings saved
+          </div>
+        )}
+        {syncNotice && (
+          <div className="toast-notice sync-toast fade-in">
+            {syncNotice}
           </div>
         )}
 
@@ -764,231 +923,367 @@ function App() {
         {activeTab === 'profile' && (
           <div className="tab-pane fade-in">
             <div className="pane-header">
-              <h3>My Profile</h3>
-              <p>Your details and health condition used to compute your daily hydration target.</p>
+              <h3>My Profile &amp; Biometrics</h3>
+              <p>Your physical details and health condition used to calculate your customized daily hydration goal.</p>
             </div>
 
-            <div className="card">
-              <div className="form-group">
-                <label htmlFor="userName">Your Name</label>
-                <input 
-                  id="userName"
-                  type="text" 
-                  value={settings.name || ''} 
-                  placeholder="Enter your name"
-                  onChange={(e) => handleSave({ ...settings, name: e.target.value })}
-                />
+            <div className="dashboard-grid">
+              {/* Left Column: Form Controls */}
+              <div className="grid-col">
+                <div className="card glass-card">
+                  <div className="form-group">
+                    <label htmlFor="userName">Your Name</label>
+                    <input 
+                      id="userName"
+                      type="text" 
+                      value={settings.name || ''} 
+                      placeholder="Enter your name"
+                      onChange={(e) => handleSave({ ...settings, name: e.target.value })}
+                    />
+                  </div>
+
+                  <div className="form-row">
+                    <div className="form-group">
+                      <label htmlFor="userWeight">Body Weight (kg)</label>
+                      <input 
+                        id="userWeight"
+                        type="number" 
+                        min="30" 
+                        max="200"
+                        value={settings.weight || 70} 
+                        onChange={(e) => handleSave({ ...settings, weight: parseInt(e.target.value) || 0 })}
+                      />
+                      <small className="field-hint">35 ml recommended per 1 kg</small>
+                    </div>
+
+                    <div className="form-group">
+                      <label htmlFor="userHeight">Height (cm)</label>
+                      <input 
+                        id="userHeight"
+                        type="number" 
+                        min="100" 
+                        max="250"
+                        value={settings.height || 170} 
+                        onChange={(e) => handleSave({ ...settings, height: parseInt(e.target.value) || 0 })}
+                      />
+                      <small className="field-hint">Basic body metric</small>
+                    </div>
+                  </div>
+
+                  <div className="form-group">
+                    <label>Health &amp; Physical Activity Tier</label>
+                    <select
+                      value={settings.medicalInfo || 'Normal Healthy'}
+                      onChange={(e) => handleSave({ ...settings, medicalInfo: e.target.value })}
+                    >
+                      <option value="Normal Healthy">Normal Healthy (Standard routine)</option>
+                      <option value="Athletic / Daily Workout">Athletic / Daily Workout (+600 ml)</option>
+                      <option value="Warm / Tropical Climate">Warm / Tropical Climate (+500 ml)</option>
+                      <option value="Pregnant / Nursing">Pregnant / Nursing (+700 ml)</option>
+                      <option value="Fluid Restricted (Medical)">Fluid Restricted by Doctor (-500 ml)</option>
+                    </select>
+                  </div>
+                </div>
               </div>
 
-              <div className="form-row">
-                <div className="form-group">
-                  <label htmlFor="userWeight">Body Weight (kg)</label>
-                  <input 
-                    id="userWeight"
-                    type="number" 
-                    min="30"
-                    max="200"
-                    value={settings.weight || 70} 
-                    onChange={(e) => handleSave({ ...settings, weight: parseInt(e.target.value) || 0 })}
-                  />
-                  <small className="field-hint">35 ml recommended per 1 kg</small>
+              {/* Right Column: Goal Breakdown & Stats */}
+              <div className="grid-col">
+                <div className="card highlight-card glass-card">
+                  <div className="highlight-content">
+                    <span className="highlight-label">YOUR COMPUTED DAILY TARGET</span>
+                    <div className="highlight-value">
+                      <span className="mono-num">{effectiveGoal.toLocaleString()}</span>
+                      <span className="unit">ml / day</span>
+                    </div>
+                    <p className="highlight-desc">
+                      Computed from {settings.weight || 70}kg body mass &amp; {settings.medicalInfo || 'Normal Healthy'} lifestyle
+                      {weatherBoost > 0 && ` + ${weatherBoost}ml adaptive boost for warm weather (${temp}°C)`}.
+                    </p>
+                  </div>
                 </div>
 
-                <div className="form-group">
-                  <label htmlFor="userHeight">Height (cm)</label>
-                  <input 
-                    id="userHeight"
-                    type="number" 
-                    min="100"
-                    max="250"
-                    value={settings.height || 170} 
-                    onChange={(e) => handleSave({ ...settings, height: parseInt(e.target.value) || 0 })}
-                  />
-                  <small className="field-hint">Basic body metric</small>
+                <div className="stats-row">
+                  <div className="stat-card glass-card">
+                    <span className="stat-icon">🔥</span>
+                    <span className="stat-number mono-num">{settings.streak || 0}</span>
+                    <span className="stat-label">Days Streak</span>
+                  </div>
+                  <div className="stat-card glass-card">
+                    <span className="stat-icon">🏆</span>
+                    <span className="stat-number mono-num">{settings.badges?.length || (totalDrankToday > 0 ? 1 : 0)} / 4</span>
+                    <span className="stat-label">Badges Unlocked</span>
+                  </div>
                 </div>
-              </div>
-
-              <div className="form-group">
-                <label>Health &amp; Physical Activity Tier</label>
-                <select
-                  value={settings.medicalInfo || 'Normal Healthy'}
-                  onChange={(e) => handleSave({ ...settings, medicalInfo: e.target.value })}
-                >
-                  <option value="Normal Healthy">Normal Healthy (Standard routine)</option>
-                  <option value="Athletic / Daily Workout">Athletic / Daily Workout (+600 ml)</option>
-                  <option value="Warm / Tropical Climate">Warm / Tropical Climate (+500 ml)</option>
-                  <option value="Pregnant / Nursing">Pregnant / Nursing (+700 ml)</option>
-                  <option value="Fluid Restricted (Medical)">Fluid Restricted by Doctor (-500 ml)</option>
-                </select>
-              </div>
-            </div>
-
-            <div className="card highlight-card">
-              <div className="highlight-content">
-                <span className="highlight-label">Your Daily Water Goal</span>
-                <div className="highlight-value">
-                  <span className="mono-num">{effectiveGoal.toLocaleString()}</span>
-                  <span className="unit">ml / day</span>
-                </div>
-                <p className="highlight-desc">
-                  Calculated based on {settings.weight || 70}kg weight and {settings.medicalInfo || 'Normal Healthy'} condition
-                  {weatherBoost > 0 && ` + ${weatherBoost}ml added for warm weather (${temp}°C)`}.
-                </p>
-              </div>
-            </div>
-
-            <div className="stats-row">
-              <div className="stat-card">
-                <span className="stat-icon">🔥</span>
-                <span className="stat-number mono-num">{settings.streak || 0}</span>
-                <span className="stat-label">Days in a Row</span>
-              </div>
-              <div className="stat-card">
-                <span className="stat-icon">🏆</span>
-                <span className="stat-number mono-num">{settings.badges?.length || (totalDrankToday > 0 ? 1 : 0)} / 4</span>
-                <span className="stat-label">Badges Unlocked</span>
               </div>
             </div>
           </div>
         )}
 
-        {/* 2. REMINDER SETTINGS & THEMES */}
+        {/* 2. REMINDER SETTINGS & CHIMES */}
         {activeTab === 'schedule' && (
           <div className="tab-pane fade-in">
             <div className="pane-header">
-              <h3>Reminders, Themes &amp; Position</h3>
-              <p>Configure reminder frequency, cup volumes, visual notification themes, and screen positioning.</p>
+              <h3>Reminders, Chimes &amp; Themes</h3>
+              <p>Configure reminder pacing, custom intake milliliters, studio sound chimes, and screen positions.</p>
             </div>
 
-            {/* Reminder Interval */}
-            <div className="card">
-              <h4 className="card-title">1. How often to remind you</h4>
-              <p className="card-subtext">Minutes between each water reminder popup.</p>
-              <div className="interval-grid">
-                {[
-                  { value: 1, label: '1 min', sub: 'Quick test' },
-                  { value: 20, label: '20 min', sub: 'Frequent' },
-                  { value: 30, label: '30 min', sub: 'Active' },
-                  { value: 45, label: '45 min', sub: 'Recommended' },
-                  { value: 60, label: '60 min', sub: 'Hourly' },
-                  { value: 90, label: '90 min', sub: 'Relaxed' }
-                ].map(opt => (
-                  <button
-                    key={opt.value}
-                    type="button"
-                    className={`choice-card ${settings.intervalMin === opt.value ? 'selected' : ''}`}
-                    onClick={() => handleSave({ ...settings, intervalMin: opt.value })}
-                  >
-                    <span className="choice-val mono-num">{opt.label}</span>
-                    <span className="choice-sub">{opt.sub}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Cup Size */}
-            <div className="card">
-              <h4 className="card-title">2. How much to drink each time</h4>
-              <p className="card-subtext">Default amount added when clicking "Drink" on the reminder.</p>
-              <div className="interval-grid cup-grid">
-                {[
-                  { value: 100, label: '100 ml', icon: '🥛', desc: 'Small Cup' },
-                  { value: 150, label: '150 ml', icon: '☕', desc: 'Regular Cup' },
-                  { value: 250, label: '250 ml', icon: '🧊', desc: 'Large Glass' },
-                  { value: 500, label: '500 ml', icon: '🍶', desc: 'Water Bottle' }
-                ].map(cup => (
-                  <button
-                    key={cup.value}
-                    type="button"
-                    className={`choice-card ${settings.manualSipMl === cup.value ? 'selected' : ''}`}
-                    onClick={() => handleSave({ ...settings, manualSipMl: cup.value })}
-                  >
-                    <span className="cup-icon">{cup.icon}</span>
-                    <span className="choice-val mono-num">{cup.label}</span>
-                    <span className="choice-sub">{cup.desc}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Notification Theme Selector */}
-            <div className="card">
-              <h4 className="card-title">3. Notification Visual Theme</h4>
-              <p className="card-subtext">Choose the color styling for the floating reminder popup.</p>
-              <div className="interval-grid themes-grid">
-                {[
-                  { id: 'oceanic', label: 'Oceanic Aqua', desc: 'Crystal Aqua glow', color: '#38BDF8' },
-                  { id: 'emerald', label: 'Cyber Emerald', desc: 'Vibrant Green glow', color: '#34D399' },
-                  { id: 'obsidian', label: 'Midnight Obsidian', desc: 'Deep Monochrome', color: '#FFFFFF' },
-                  { id: 'neon', label: 'Neon Twilight', desc: 'Violet & Cyan glow', color: '#C084FC' }
-                ].map(th => (
-                  <button
-                    key={th.id}
-                    type="button"
-                    className={`choice-card theme-choice ${settings.notificationTheme === th.id ? 'selected' : ''}`}
-                    onClick={() => handleSave({ ...settings, notificationTheme: th.id })}
-                  >
-                    <span className="theme-color-dot" style={{ backgroundColor: th.color, boxShadow: `0 0 10px ${th.color}` }}></span>
-                    <span className="choice-val">{th.label}</span>
-                    <span className="choice-sub">{th.desc}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Notification Position Selector */}
-            <div className="card">
-              <h4 className="card-title">4. Screen Popup Position</h4>
-              <p className="card-subtext">Select where on your screen the notification pill appears.</p>
-              <div className="interval-grid positions-grid">
-                {[
-                  { id: 'bottom-right', label: 'Bottom Right ↘', desc: 'Above clock (Recommended)' },
-                  { id: 'bottom-left', label: 'Bottom Left ↙', desc: 'Opposite corner' },
-                  { id: 'top-right', label: 'Top Right ↗', desc: 'Top notification banner' },
-                  { id: 'bottom-center', label: 'Bottom Center ⬇', desc: 'Centered floating pill' }
-                ].map(pos => (
-                  <button
-                    key={pos.id}
-                    type="button"
-                    className={`choice-card ${settings.notificationPosition === pos.id ? 'selected' : ''}`}
-                    onClick={() => handleSave({ ...settings, notificationPosition: pos.id })}
-                  >
-                    <span className="choice-val text-sm">{pos.label}</span>
-                    <span className="choice-sub">{pos.desc}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Sound Toggle */}
-            <div className="card">
-              <label className="checkbox-row">
-                <input 
-                  type="checkbox" 
-                  checked={settings.soundOn !== false} 
-                  onChange={(e) => handleSave({ ...settings, soundOn: e.target.checked })}
-                />
-                <div className="checkbox-text">
-                  <strong>Play chime sound when reminder appears</strong>
-                  <p>Plays a soft water droplet chime so you don't miss your reminder.</p>
+            <div className="dashboard-grid">
+              {/* Left Column: Timing & Milliliters */}
+              <div className="grid-col">
+                {/* 1. Interval */}
+                <div className="card glass-card">
+                  <h4 className="card-title">1. Reminder Interval</h4>
+                  <p className="card-subtext">Minutes between each ambient hydration prompt.</p>
+                  <div className="interval-grid">
+                    {[
+                      { value: 1, label: '1 min', sub: 'Quick test' },
+                      { value: 20, label: '20 min', sub: 'Frequent' },
+                      { value: 30, label: '30 min', sub: 'Active' },
+                      { value: 45, label: '45 min', sub: 'Recommended' },
+                      { value: 60, label: '60 min', sub: 'Hourly' },
+                      { value: 90, label: '90 min', sub: 'Relaxed' }
+                    ].map(opt => (
+                      <button
+                        key={opt.value}
+                        type="button"
+                        className={`choice-card ${settings.intervalMin === opt.value ? 'selected' : ''}`}
+                        onClick={() => handleSave({ ...settings, intervalMin: opt.value })}
+                      >
+                        <span className="choice-val mono-num">{opt.label}</span>
+                        <span className="choice-sub">{opt.sub}</span>
+                      </button>
+                    ))}
+                  </div>
                 </div>
-              </label>
-            </div>
 
-            {/* Test Reminder Button */}
-            <div className="card test-card">
-              <div className="test-left">
-                <h4 className="card-title">Test Reminder Notification</h4>
-                <p className="card-subtext">Click to preview the popup in your selected theme and screen position.</p>
-                {testNotice && <span className="test-success">✓ Notification triggered on your screen!</span>}
+                {/* 2. Cup Volume & Custom Miltime */}
+                <div className="card glass-card">
+                  <h4 className="card-title">2. Default Sip Volume</h4>
+                  <p className="card-subtext">Default intake added when tapping "Drink" on the reminder.</p>
+                  <div className="interval-grid cup-grid">
+                    {[
+                      { value: 100, label: '100 ml', icon: '🥛', desc: 'Small Cup' },
+                      { value: 150, label: '150 ml', icon: '☕', desc: 'Regular Cup' },
+                      { value: 250, label: '250 ml', icon: '🧊', desc: 'Large Glass' },
+                      { value: 500, label: '500 ml', icon: '🍶', desc: 'Water Bottle' }
+                    ].map(cup => (
+                      <button
+                        key={cup.value}
+                        type="button"
+                        className={`choice-card ${settings.manualSipMl === cup.value ? 'selected' : ''}`}
+                        onClick={() => {
+                          handleSave({ ...settings, manualSipMl: cup.value });
+                          setCustomMlInput(cup.value.toString());
+                        }}
+                      >
+                        <span className="cup-icon">{cup.icon}</span>
+                        <span className="choice-val mono-num">{cup.label}</span>
+                        <span className="choice-sub">{cup.desc}</span>
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* Custom Milliliters Input */}
+                  <div className="custom-ml-box mt-3">
+                    <label className="text-xs text-slate-400 font-medium">Or Set Custom Volume (ml):</label>
+                    <div className="custom-ml-input-row">
+                      <input 
+                        type="number"
+                        min="50"
+                        max="1500"
+                        step="25"
+                        placeholder="e.g. 200, 330, 750"
+                        value={customMlInput}
+                        onChange={(e) => setCustomMlInput(e.target.value)}
+                        onBlur={() => {
+                          const val = parseInt(customMlInput, 10);
+                          if (val && val >= 50 && val <= 2000) {
+                            handleSave({ ...settings, manualSipMl: val });
+                          }
+                        }}
+                        className="custom-ml-input mono-num"
+                      />
+                      <button 
+                        type="button" 
+                        className="btn-apply-ml"
+                        onClick={() => {
+                          const val = parseInt(customMlInput, 10);
+                          if (val && val >= 50 && val <= 2000) {
+                            handleSave({ ...settings, manualSipMl: val });
+                          }
+                        }}
+                      >
+                        Set Volume
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                {/* 3. Daily Active Miltime Window */}
+                <div className="card glass-card">
+                  <h4 className="card-title">3. Active Notification Hours</h4>
+                  <p className="card-subtext">Quiet hours: Reminders will only sound during your active waking period.</p>
+                  <div className="time-window-row">
+                    <div className="time-col">
+                      <label>Wake Start Time</label>
+                      <input 
+                        type="time" 
+                        value={settings.activeHoursStart || '08:00'} 
+                        onChange={(e) => handleSave({ ...settings, activeHoursStart: e.target.value })}
+                        className="time-picker mono-num"
+                      />
+                    </div>
+                    <span className="time-divider">➔</span>
+                    <div className="time-col">
+                      <label>Wind-down End Time</label>
+                      <input 
+                        type="time" 
+                        value={settings.activeHoursEnd || '22:00'} 
+                        onChange={(e) => handleSave({ ...settings, activeHoursEnd: e.target.value })}
+                        className="time-picker mono-num"
+                      />
+                    </div>
+                  </div>
+                </div>
               </div>
-              <button 
-                type="button" 
-                className="btn-accent"
-                onClick={handleTestReminder}
-              >
-                🔔 Test Reminder Now
-              </button>
+
+              {/* Right Column: Audio Chimes & Visual Styling */}
+              <div className="grid-col">
+                {/* 4. Acoustic Chimes Synthesizer */}
+                <div className="card glass-card">
+                  <div className="card-header-row">
+                    <div>
+                      <h4 className="card-title">4. Notification Acoustic Chimes</h4>
+                      <p className="card-subtext">Lossless synthesized chimes matching the web audio suite.</p>
+                    </div>
+                    <label className="toggle-switch">
+                      <input 
+                        type="checkbox" 
+                        checked={settings.soundOn !== false} 
+                        onChange={(e) => handleSave({ ...settings, soundOn: e.target.checked })}
+                      />
+                      <span className="toggle-slider"></span>
+                    </label>
+                  </div>
+
+                  {settings.soundOn !== false && (
+                    <div className="chime-suite-container fade-in">
+                      <div className="chime-tones-grid">
+                        {[
+                          { id: 'icelandic', name: 'Icelandic Rain', desc: '432Hz Mineral sine shimmer', icon: '🌊' },
+                          { id: 'basalt', name: 'Basalt Drop', desc: 'Resonant water drop plunge', icon: '💧' },
+                          { id: 'ripple', name: 'Ocean Ripple', desc: 'Aqua bubbling chord arpeggio', icon: '🫧' },
+                          { id: 'bowl', name: 'Zen Singing Bowl', desc: '528Hz Meditative sustain', icon: '🎐' }
+                        ].map(chime => (
+                          <div 
+                            key={chime.id}
+                            className={`chime-card ${settings.chimeTone === chime.id ? 'active' : ''}`}
+                            onClick={() => {
+                              handleSave({ ...settings, chimeTone: chime.id });
+                              handlePreviewChime(chime.id);
+                            }}
+                          >
+                            <div className="chime-card-left">
+                              <span className="chime-icon">{chime.icon}</span>
+                              <div>
+                                <span className="chime-name">{chime.name}</span>
+                                <span className="chime-desc">{chime.desc}</span>
+                              </div>
+                            </div>
+                            <button
+                              type="button"
+                              className="btn-chime-play"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handlePreviewChime(chime.id);
+                              }}
+                              title="Play preview sound"
+                            >
+                              ▶ Play
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+
+                      {/* Volume Slider */}
+                      <div className="volume-slider-row mt-3">
+                        <span className="volume-icon">🔊</span>
+                        <input 
+                          type="range"
+                          min="0.1"
+                          max="1.0"
+                          step="0.05"
+                          value={settings.chimeVolume !== undefined ? settings.chimeVolume : 0.75}
+                          onChange={(e) => handleSave({ ...settings, chimeVolume: parseFloat(e.target.value) })}
+                          className="volume-slider"
+                        />
+                        <span className="volume-label mono-num">
+                          {Math.round((settings.chimeVolume !== undefined ? settings.chimeVolume : 0.75) * 100)}%
+                        </span>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* 5. Notification Visual Theme */}
+                <div className="card glass-card">
+                  <h4 className="card-title">5. Notification Visual Theme</h4>
+                  <p className="card-subtext">Choose color ambiance for the floating reminder popup.</p>
+                  <div className="interval-grid themes-grid">
+                    {[
+                      { id: 'oceanic', label: 'Oceanic Aqua', desc: 'Crystal Aqua glow', color: '#38BDF8' },
+                      { id: 'emerald', label: 'Cyber Emerald', desc: 'Vibrant Green glow', color: '#34D399' },
+                      { id: 'obsidian', label: 'Midnight Obsidian', desc: 'Deep Monochrome', color: '#FFFFFF' },
+                      { id: 'neon', label: 'Neon Twilight', desc: 'Violet & Cyan', color: '#C084FC' }
+                    ].map(th => (
+                      <button
+                        key={th.id}
+                        type="button"
+                        className={`choice-card theme-choice ${settings.notificationTheme === th.id ? 'selected' : ''}`}
+                        onClick={() => handleSave({ ...settings, notificationTheme: th.id })}
+                      >
+                        <span className="theme-color-dot" style={{ backgroundColor: th.color, boxShadow: `0 0 10px ${th.color}` }}></span>
+                        <span className="choice-val">{th.label}</span>
+                        <span className="choice-sub">{th.desc}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* 6. Screen Position & Test */}
+                <div className="card glass-card">
+                  <h4 className="card-title">6. Popup Screen Position</h4>
+                  <div className="interval-grid positions-grid">
+                    {[
+                      { id: 'bottom-right', label: 'Bottom Right ↘', desc: 'Above clock' },
+                      { id: 'bottom-left', label: 'Bottom Left ↙', desc: 'Opposite corner' },
+                      { id: 'top-right', label: 'Top Right ↗', desc: 'Banner' },
+                      { id: 'bottom-center', label: 'Bottom Center ⬇', desc: 'Centered pill' }
+                    ].map(pos => (
+                      <button
+                        key={pos.id}
+                        type="button"
+                        className={`choice-card ${settings.notificationPosition === pos.id ? 'selected' : ''}`}
+                        onClick={() => handleSave({ ...settings, notificationPosition: pos.id })}
+                      >
+                        <span className="choice-val text-sm">{pos.label}</span>
+                        <span className="choice-sub">{pos.desc}</span>
+                      </button>
+                    ))}
+                  </div>
+
+                  <div className="test-action-bar mt-4">
+                    <button 
+                      type="button" 
+                      className="btn-accent"
+                      onClick={handleTestReminder}
+                    >
+                      🔔 Test Reminder Notification
+                    </button>
+                    {testNotice && <span className="test-success">✓ Notification triggered on screen!</span>}
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         )}
@@ -998,126 +1293,171 @@ function App() {
           <div className="tab-pane fade-in">
             <div className="pane-header">
               <h3>Today's Water Tracker</h3>
-              <p>Keep track of how much water you have drank today.</p>
+              <p>Keep track of how much water and hydration you have logged today.</p>
             </div>
 
             {weatherBoost > 0 && (
-              <div className="weather-banner">
-                ☀️ <strong>Hot Weather ({temp}°C):</strong> We added 500 ml to your goal so you stay properly hydrated today.
+              <div className="weather-banner glass-card">
+                ☀️ <strong>Hot Weather ({temp}°C):</strong> We added 500 ml to your target so you stay hydrated.
               </div>
             )}
 
-            <div className="card progress-hero-card">
-              <div className="progress-info">
-                <span className="progress-label">Today's Progress</span>
-                <div className="progress-amount">
-                  <span className="drank-val mono-num">{totalDrankToday.toLocaleString()}</span>
-                  <span className="goal-divider">/</span>
-                  <span className="goal-val mono-num">{effectiveGoal.toLocaleString()} ml</span>
-                </div>
-                <p className="progress-remaining">
-                  {totalDrankToday >= effectiveGoal 
-                    ? '🎉 Goal reached! You are fully hydrated today.' 
-                    : `${(effectiveGoal - totalDrankToday).toLocaleString()} ml remaining today`}
-                </p>
-                <div className="bar-track">
-                  <div 
-                    className="bar-fill" 
-                    style={{ width: `${progressPercent}%` }}
-                  ></div>
-                </div>
-                <span className="percent-text mono-num">{progressPercent}% Completed</span>
-              </div>
-            </div>
-
-            <div className="card">
-              <h4 className="card-title">Quick Add Water</h4>
-              <p className="card-subtext">Click any button below to instantly log water.</p>
-              <div className="quick-log-row">
-                <button 
-                  type="button" 
-                  className="quick-pill" 
-                  onClick={() => handleLogQuickWater(150, 'water')}
-                >
-                  +150 ml (Cup)
-                </button>
-                <button 
-                  type="button" 
-                  className="quick-pill" 
-                  onClick={() => handleLogQuickWater(250, 'water')}
-                >
-                  +250 ml (Glass)
-                </button>
-                <button 
-                  type="button" 
-                  className="quick-pill" 
-                  onClick={() => handleLogQuickWater(500, 'water')}
-                >
-                  +500 ml (Bottle)
-                </button>
-                <button 
-                  type="button" 
-                  className="quick-pill beverage-pill" 
-                  onClick={() => handleLogQuickWater(150, 'coffee')}
-                >
-                  +☕ Coffee
-                </button>
-                <button 
-                  type="button" 
-                  className="quick-pill beverage-pill" 
-                  onClick={() => handleLogQuickWater(150, 'tea')}
-                >
-                  +🍵 Tea
-                </button>
-              </div>
-            </div>
-
-            <div className="card chart-card">
-              <h4 className="card-title">Past 7 Days</h4>
-              <p className="card-subtext">Water intake over the last week in milliliters.</p>
-              <div style={{ width: '100%', height: 180, marginTop: 16 }}>
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={chartData}>
-                    <XAxis dataKey="name" stroke="#64748B" fontSize={12} tickLine={false} axisLine={false} />
-                    <Tooltip 
-                      cursor={{ fill: 'rgba(56, 189, 248, 0.06)' }} 
-                      contentStyle={{ 
-                        background: '#0C141F', 
-                        borderColor: '#1E293B', 
-                        borderRadius: '12px',
-                        color: '#FFFFFF',
-                        fontFamily: 'JetBrains Mono' 
-                      }} 
-                    />
-                    <Bar dataKey="ml" fill="#38BDF8" radius={[6, 6, 0, 0]} />
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-            </div>
-
-            <div className="card">
-              <h4 className="card-title">Recent Drinks Today</h4>
-              <div className="logs-list">
-                {todayLogs.length === 0 ? (
-                  <p className="empty-logs">No drinks logged yet today. Take a sip and click +150ml above!</p>
-                ) : (
-                  todayLogs.slice().reverse().map((log, i) => (
-                    <div key={i} className="log-row">
-                      <div className="log-left">
-                        <span className="log-icon">
-                          {log.beverageType === 'coffee' ? '☕' : log.beverageType === 'tea' ? '🍵' : '💧'}
-                        </span>
-                        <div>
-                          <strong>{log.beverageType === 'coffee' ? 'Coffee' : log.beverageType === 'tea' ? 'Tea' : 'Water'}</strong>
-                          <span className="log-time">
-                            {new Date(log.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                          </span>
-                        </div>
-                      </div>
-                      <span className="log-amount mono-num">+{log.amount} ml</span>
+            <div className="dashboard-grid">
+              {/* Left Column: Progress Hero & Quick Add */}
+              <div className="grid-col">
+                <div className="card progress-hero-card glass-card">
+                  <div className="progress-info">
+                    <span className="progress-label">TODAY'S HYDRATION METRICS</span>
+                    <div className="progress-amount">
+                      <span className="drank-val mono-num">{totalDrankToday.toLocaleString()}</span>
+                      <span className="goal-divider">/</span>
+                      <span className="goal-val mono-num">{effectiveGoal.toLocaleString()} ml</span>
                     </div>
-                  ))
-                )}
+                    <p className="progress-remaining">
+                      {totalDrankToday >= effectiveGoal 
+                        ? '🎉 Goal reached! You are fully hydrated today.' 
+                        : `${(effectiveGoal - totalDrankToday).toLocaleString()} ml remaining today`}
+                    </p>
+                    <div className="bar-track">
+                      <div 
+                        className="bar-fill" 
+                        style={{ width: `${progressPercent}%` }}
+                      ></div>
+                    </div>
+                    <span className="percent-text mono-num">{progressPercent}% Completed</span>
+                  </div>
+                </div>
+
+                <div className="card glass-card">
+                  <h4 className="card-title">Quick Log Water</h4>
+                  <p className="card-subtext">Click any preset or beverage to immediately log intake.</p>
+                  <div className="quick-log-row">
+                    <button 
+                      type="button" 
+                      className="quick-pill" 
+                      onClick={() => handleLogQuickWater(150, 'water')}
+                    >
+                      +150 ml (Cup)
+                    </button>
+                    <button 
+                      type="button" 
+                      className="quick-pill" 
+                      onClick={() => handleLogQuickWater(250, 'water')}
+                    >
+                      +250 ml (Glass)
+                    </button>
+                    <button 
+                      type="button" 
+                      className="quick-pill" 
+                      onClick={() => handleLogQuickWater(500, 'water')}
+                    >
+                      +500 ml (Bottle)
+                    </button>
+                    <button 
+                      type="button" 
+                      className="quick-pill beverage-pill" 
+                      onClick={() => handleLogQuickWater(150, 'coffee')}
+                    >
+                      +☕ Coffee
+                    </button>
+                    <button 
+                      type="button" 
+                      className="quick-pill beverage-pill" 
+                      onClick={() => handleLogQuickWater(150, 'tea')}
+                    >
+                      +🍵 Tea
+                    </button>
+                  </div>
+
+                  {/* Configured sip quick log button */}
+                  <div className="custom-quick-pill-row mt-3">
+                    <button
+                      type="button"
+                      className="quick-pill highlight-pill"
+                      onClick={() => handleLogQuickWater(settings.manualSipMl || 150, 'water')}
+                    >
+                      💧 Log Default Sip (+{settings.manualSipMl || 150} ml)
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Right Column: 7 Days Chart & Deduplicated Drink Logs */}
+              <div className="grid-col">
+                <div className="card chart-card glass-card">
+                  <h4 className="card-title">Past 7 Days Intake</h4>
+                  <p className="card-subtext">Water intake over the last week in milliliters.</p>
+                  <div style={{ width: '100%', height: 180, marginTop: 16 }}>
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart data={chartData}>
+                        <XAxis dataKey="name" stroke="#64748B" fontSize={12} tickLine={false} axisLine={false} />
+                        <Tooltip 
+                          cursor={{ fill: 'rgba(56, 189, 248, 0.06)' }} 
+                          contentStyle={{ 
+                            background: '#0C141F', 
+                            borderColor: '#1E293B', 
+                            borderRadius: '12px',
+                            color: '#FFFFFF',
+                            fontFamily: 'JetBrains Mono' 
+                          }} 
+                        />
+                        <Bar dataKey="ml" fill="#38BDF8" radius={[6, 6, 0, 0]} />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
+                </div>
+
+                <div className="card glass-card">
+                  <div className="card-header-row">
+                    <div>
+                      <h4 className="card-title">Recent Drinks Today</h4>
+                      <p className="card-subtext">{todayLogs.length} total entries recorded today</p>
+                    </div>
+                    {todayLogs.length > 1 && (
+                      <button
+                        type="button"
+                        className="btn-clean-duplicates"
+                        onClick={handleCleanDuplicates}
+                        title="Remove any identical rapid entries"
+                      >
+                        🧹 Clean Duplicates
+                      </button>
+                    )}
+                  </div>
+
+                  <div className="logs-list">
+                    {todayLogs.length === 0 ? (
+                      <p className="empty-logs">No drinks logged yet today. Click +150ml or have a glass of water!</p>
+                    ) : (
+                      todayLogs.slice().reverse().map((log, i) => (
+                        <div key={log.id || i} className="log-row">
+                          <div className="log-left">
+                            <span className="log-icon">
+                              {log.beverageType === 'coffee' ? '☕' : log.beverageType === 'tea' ? '🍵' : '💧'}
+                            </span>
+                            <div>
+                              <strong>{log.beverageType === 'coffee' ? 'Coffee' : log.beverageType === 'tea' ? 'Tea' : 'Water'}</strong>
+                              <span className="log-time">
+                                {new Date(log.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                              </span>
+                            </div>
+                          </div>
+                          <div className="log-right">
+                            <span className="log-amount mono-num">+{log.amount} ml</span>
+                            <button
+                              type="button"
+                              className="btn-delete-log"
+                              onClick={() => handleDeleteLog(log.id)}
+                              title="Delete this entry"
+                            >
+                              ✕
+                            </button>
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -1128,32 +1468,32 @@ function App() {
           <div className="tab-pane fade-in">
             <div className="pane-header">
               <h3>Badges &amp; Rewards</h3>
-              <p>Simple milestones you unlock as you build a daily habit of drinking water.</p>
+              <p>Simple milestones you unlock as you build a mindful daily habit of drinking water.</p>
             </div>
 
             <div className="badges-grid">
-              <div className={`badge-card ${totalDrankToday > 0 ? 'unlocked' : 'locked'}`}>
+              <div className={`badge-card glass-card ${totalDrankToday > 0 ? 'unlocked' : 'locked'}`}>
                 <div className="badge-icon">🌟</div>
                 <h4>First Drink</h4>
-                <p>Drank water today.</p>
+                <p>Logged your first glass of water today.</p>
                 <span className="badge-tag">{totalDrankToday > 0 ? '✓ Unlocked' : 'Locked'}</span>
               </div>
 
-              <div className={`badge-card ${settings.streak >= 3 ? 'unlocked' : 'locked'}`}>
+              <div className={`badge-card glass-card ${settings.streak >= 3 ? 'unlocked' : 'locked'}`}>
                 <div className="badge-icon">🐪</div>
                 <h4>3 Days in a Row</h4>
                 <p>Hit your water goal 3 days in a row.</p>
                 <span className="badge-tag">{settings.streak >= 3 ? '✓ Unlocked' : 'Locked'}</span>
               </div>
 
-              <div className={`badge-card ${logs.some(l => l.beverageType === 'coffee') ? 'unlocked' : 'locked'}`}>
+              <div className={`badge-card glass-card ${logs.some(l => l.beverageType === 'coffee') ? 'unlocked' : 'locked'}`}>
                 <div className="badge-icon">☕</div>
                 <h4>Coffee Break</h4>
-                <p>Logged a cup of coffee.</p>
+                <p>Logged a cup of coffee and balanced hydration.</p>
                 <span className="badge-tag">{logs.some(l => l.beverageType === 'coffee') ? '✓ Unlocked' : 'Locked'}</span>
               </div>
 
-              <div className={`badge-card ${logs.some(l => {
+              <div className={`badge-card glass-card ${logs.some(l => {
                 const h = new Date(l.timestamp).getHours();
                 return h >= 0 && h < 5;
               }) ? 'unlocked' : 'locked'}`}>
@@ -1173,44 +1513,46 @@ function App() {
         {activeTab === 'general' && (
           <div className="tab-pane fade-in">
             <div className="pane-header">
-              <h3>App Settings</h3>
-              <p>Control how Water Buddy starts and behaves on your computer.</p>
+              <h3>App Settings &amp; Windows Integration</h3>
+              <p>Control startup behavior, full-screen suppression, and desktop ergonomics.</p>
             </div>
 
-            <div className="card">
-              <label className="checkbox-row">
-                <input 
-                  type="checkbox" 
-                  checked={settings.launchOnStartup !== false} 
-                  onChange={(e) => handleSave({ ...settings, launchOnStartup: e.target.checked })}
-                />
-                <div className="checkbox-text">
-                  <strong>Open automatically when Windows starts</strong>
-                  <p>Water Buddy will quietly sit in your system tray every time your computer turns on.</p>
-                </div>
-              </label>
-            </div>
-
-            <div className="card">
-              <label className="checkbox-row">
-                <input 
-                  type="checkbox" 
-                  checked={settings.focusMode || false} 
-                  onChange={(e) => handleSave({ ...settings, focusMode: e.target.checked })}
-                />
-                <div className="checkbox-text">
-                  <strong>Do Not Disturb (Game &amp; Full Screen)</strong>
-                  <p>Automatically pause reminder popups while playing games or watching full-screen videos.</p>
-                </div>
-              </label>
-            </div>
-
-            <div className="card about-card">
-              <div className="about-left">
-                <strong>Water Buddy for Windows</strong>
-                <p>Version 2.4 · Oceanic Abyssal Edition</p>
+            <div className="general-settings-stack">
+              <div className="card glass-card">
+                <label className="checkbox-row">
+                  <input 
+                    type="checkbox" 
+                    checked={settings.launchOnStartup !== false} 
+                    onChange={(e) => handleSave({ ...settings, launchOnStartup: e.target.checked })}
+                  />
+                  <div className="checkbox-text">
+                    <strong>Open automatically when Windows starts</strong>
+                    <p>Water Buddy will quietly sit in your system tray every time your computer turns on.</p>
+                  </div>
+                </label>
               </div>
-              <span className="about-pill">Windows 11 Certified</span>
+
+              <div className="card glass-card">
+                <label className="checkbox-row">
+                  <input 
+                    type="checkbox" 
+                    checked={settings.focusMode || false} 
+                    onChange={(e) => handleSave({ ...settings, focusMode: e.target.checked })}
+                  />
+                  <div className="checkbox-text">
+                    <strong>Do Not Disturb (Game &amp; Full Screen)</strong>
+                    <p>Automatically pause reminder popups while playing games or watching full-screen videos.</p>
+                  </div>
+                </label>
+              </div>
+
+              <div className="card about-card glass-card">
+                <div className="about-left">
+                  <strong>Water Buddy for Windows</strong>
+                  <p>Version 2.4 · Oceanic Abyssal Edition</p>
+                </div>
+                <span className="about-pill">Windows 11 Certified</span>
+              </div>
             </div>
           </div>
         )}
@@ -1220,48 +1562,134 @@ function App() {
           <div className="tab-pane fade-in">
             <div className="pane-header">
               <h3>Backup &amp; Cloud Sync</h3>
-              <p>Synchronize your water history and biometrics with the Water Buddy web portal.</p>
+              <p>Synchronize your hydration history and biometrics with the Water Buddy cloud.</p>
             </div>
 
-            {settings.authMode === 'guest' ? (
-              <div className="card guest-warning-card">
-                <div className="guest-banner-icon">🟡</div>
-                <div>
-                  <h4 className="font-bold text-white text-base">You are currently in Guest Mode (Offline)</h4>
-                  <p className="text-slate-400 text-xs mt-1">
-                    Your hydration data is saved locally on this PC. To sync your progress across devices and unlock Pro features, please register an account through our web portal.
-                  </p>
-                  <button 
-                    type="button" 
-                    onClick={openWebPortal}
-                    className="btn-accent mt-4 inline-flex items-center gap-2"
-                  >
-                    <span>Register on Web Portal ↗</span>
-                  </button>
-                </div>
-              </div>
-            ) : (
-              <div className="card">
-                <div className="account-info-row">
-                  <div>
-                    <span className="text-xs text-[#38BDF8] font-mono uppercase">Connected Account</span>
-                    <h4 className="text-lg font-bold text-white">{settings.userProfile?.email || 'Logged In'}</h4>
-                    <span className="text-xs text-emerald-400 font-mono">✓ Cloud Sync Active (Auto 5min)</span>
+            <div className="dashboard-grid">
+              {/* Left Column: Cloud Sync HUD & Controls */}
+              <div className="grid-col">
+                <div className="card glass-card sync-hud-card">
+                  <div className="sync-hud-header">
+                    <span className="sync-badge">CLOUD ENGINE</span>
+                    <h4 className="sync-hud-title">Sync Health &amp; Telemetry</h4>
                   </div>
-                  <button
-                    type="button"
-                    onClick={handleLogout}
-                    className="btn-sidebar-logout text-xs"
-                  >
-                    🚪 Sign Out of this Device
-                  </button>
+
+                  <div className="sync-stats-grid">
+                    <div className="sync-stat-item">
+                      <span className="sync-stat-label">Cloud Status</span>
+                      <span className="sync-stat-val text-emerald">
+                        {settings.authMode === 'logged_in' ? '🟢 Connected' : '🟡 Offline Guest'}
+                      </span>
+                    </div>
+
+                    <div className="sync-stat-item">
+                      <span className="sync-stat-label">Last Synchronized</span>
+                      <span className="sync-stat-val mono-num">
+                        {lastSyncTime ? new Date(lastSyncTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Never'}
+                      </span>
+                    </div>
+
+                    <div className="sync-stat-item">
+                      <span className="sync-stat-label">Auto-Sync Schedule</span>
+                      <span className="sync-stat-val">Every 5 minutes</span>
+                    </div>
+
+                    <div className="sync-stat-item">
+                      <span className="sync-stat-label">Tracked Logs</span>
+                      <span className="sync-stat-val mono-num">{logs.length} entries</span>
+                    </div>
+                  </div>
+
+                  <div className="sync-action-bar mt-4">
+                    <button
+                      type="button"
+                      className={`btn-primary btn-sync-now ${isSyncing ? 'loading' : ''}`}
+                      onClick={handleSyncNow}
+                      disabled={isSyncing}
+                    >
+                      <span className={`sync-icon ${isSyncing ? 'spin-anim' : ''}`}>🔄</span>
+                      <span>{isSyncing ? 'Synchronizing with Cloud...' : 'Sync Now with Cloud'}</span>
+                    </button>
+                  </div>
                 </div>
               </div>
-            )}
+
+              {/* Right Column: Account Details or Guest Mode Callout */}
+              <div className="grid-col">
+                {settings.authMode === 'guest' ? (
+                  <div className="card guest-warning-card glass-card">
+                    <div className="guest-banner-icon">🟡</div>
+                    <div>
+                      <h4 className="font-bold text-white text-base">Guest Mode (Local Offline PC)</h4>
+                      <p className="text-slate-400 text-xs mt-2 leading-relaxed">
+                        Your hydration logs are stored safely in your local Windows app storage. To unlock multi-device synchronization and web dashboard analytics, register an account on our web portal.
+                      </p>
+                      <div className="guest-actions mt-4">
+                        <button 
+                          type="button" 
+                          onClick={openWebPortal}
+                          className="btn-accent inline-flex items-center gap-2"
+                        >
+                          <span>Open Web Registration ↗</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setSettings(prev => ({ ...prev, authMode: null }))}
+                          className="btn-secondary"
+                        >
+                          Switch to Sign In
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="card glass-card account-card">
+                    <div className="account-card-header">
+                      <span className="account-tag">CONNECTED IDENTITY</span>
+                      <h4 className="account-email text-lg font-bold text-white">
+                        {settings.userProfile?.email || 'Logged In Account'}
+                      </h4>
+                      <span className="account-role-pill">
+                        {settings.userProfile?.role === 'owner' ? '👑 Owner Account' : '💧 Hydration Member'}
+                      </span>
+                    </div>
+
+                    <div className="account-details-list mt-3">
+                      <div className="account-detail-row">
+                        <span className="detail-label">Sync Server:</span>
+                        <span className="detail-val mono-num">http://localhost:5000/api</span>
+                      </div>
+                      <div className="account-detail-row">
+                        <span className="detail-label">Web Portal:</span>
+                        <span className="detail-val">Active at localhost:3000</span>
+                      </div>
+                    </div>
+
+                    <div className="account-actions-row mt-4">
+                      <button
+                        type="button"
+                        onClick={openWebPortal}
+                        className="btn-secondary text-xs"
+                      >
+                        Open Web Portal ↗
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleLogout}
+                        className="btn-danger-pill text-xs"
+                      >
+                        🚪 Sign Out of Device
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
         )}
       </main>
     </div>
+  </div>
   );
 }
 
