@@ -1,7 +1,9 @@
 {
   "name": "desktop",
   "private": true,
-  "version": "1.0.0",
+  "version": "1.0.1",
+  "description": "Water Buddy — Atmospheric Hydration & Desktop Health Companion",
+  "author": "Srikant Sahu",
   "type": "module",
   "main": "electron/main.js",
   "scripts": {
@@ -28,9 +30,11 @@
       ]
     },
     "nsis": {
-      "oneClick": true,
+      "oneClick": false,
       "perMachine": false,
       "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
       "artifactName": "WaterBuddy-Setup.exe"
     },
     "publish": [
