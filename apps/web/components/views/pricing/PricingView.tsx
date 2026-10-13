@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { ProformaData, FeatureItem, PricingConfig } from '@/types';
 import { playIcelandicChime, playBasaltDrop } from '@/utils/audio';
 import { Check, ChevronDown, ChevronUp, Download, Sparkles, Key, ShieldCheck, FileText, ArrowRight, Lock, Layers } from 'lucide-react';
+import { API_BASE_URL } from '@/utils/api';
 
 const DEFAULT_PRICING_FEATURES: FeatureItem[] = [
   {
@@ -153,7 +154,7 @@ export function PricingView({
   });
 
   useEffect(() => {
-    fetch('http://localhost:5000/api/admin/pricing')
+    fetch(`${API_BASE_URL}/api/admin/pricing`)
       .then((r) => r.json())
       .then((data) => {
         if (data.pricing) {

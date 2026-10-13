@@ -15,6 +15,7 @@ import {
   ExternalLink,
   Activity
 } from 'lucide-react';
+import { API_BASE_URL } from '@/utils/api';
 
 interface AdminViewProps {
   onToast: (msg: string) => void;
@@ -133,9 +134,9 @@ export function AdminView({ onToast, onNavigateTab }: AdminViewProps) {
     setLoading(true);
     try {
       const [resStats, resUsers, resInq] = await Promise.all([
-        fetch('http://localhost:5000/api/admin/stats').catch(() => null),
-        fetch('http://localhost:5000/api/admin/users').catch(() => null),
-        fetch('http://localhost:5000/api/admin/inquiries').catch(() => null)
+        fetch(`${API_BASE_URL}/api/admin/stats`).catch(() => null),
+        fetch(`${API_BASE_URL}/api/admin/users`).catch(() => null),
+        fetch(`${API_BASE_URL}/api/admin/inquiries`).catch(() => null)
       ]);
 
       if (resStats && resStats.ok) {

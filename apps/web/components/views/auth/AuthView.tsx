@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { WebUser } from '@/types';
 import { Droplet, Sparkles, CheckCircle2, User, Lock, Mail } from 'lucide-react';
+import { API_BASE_URL } from '@/utils/api';
 
 interface AuthViewProps {
   onLoginSuccess: (user: WebUser, token: string) => void;
@@ -68,7 +69,7 @@ export function AuthView({ onLoginSuccess, onNavigateTab, onToast, onStartOnboar
         }
       } : { email, password };
 
-      const res = await fetch(`http://localhost:5000${endpoint}`, {
+      const res = await fetch(`${API_BASE_URL}${endpoint}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(bodyData)
@@ -97,7 +98,7 @@ export function AuthView({ onLoginSuccess, onNavigateTab, onToast, onStartOnboar
       }
     } catch (err: any) {
       console.error('Auth request error:', err);
-      setErrorMsg('Could not connect to authentication server (http://localhost:5000). Please check your connection.');
+      setErrorMsg(`Could not connect to authentication server (${API_BASE_URL}). Please check your connection.`);
     } finally {
       setLoading(false);
     }

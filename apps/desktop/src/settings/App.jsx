@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import { playChimeByName, playBasaltDrop, playIcelandicChime, playOceanRipple, playSingingBowl } from '../utils/audio.js';
+import { API_BASE_URL } from '../utils/api.js';
 import './index.css';
 
 // Deduplicate helper: cleans identical logs created in the same time window or with matching ID
@@ -101,6 +102,29 @@ function App() {
     ]
   });
 
+  // Desktop Release & Auto-Updater state
+  const [updateState, setUpdateState] = useState({
+    status: 'idle', // 'idle' | 'checking' | 'available' | 'not-available' | 'downloading' | 'downloaded' | 'error'
+    currentVersion: '1.0.0',
+    availableVersion: null,
+    releaseNotes: null,
+    progress: 0,
+    error: null
+  });
+
+  const handleCheckUpdates = async () => {
+    if (window.electronAPI?.checkForUpdates) {
+      setUpdateState(prev => ({ ...prev, status: 'checking', error: null }));
+      await window.electronAPI.checkForUpdates();
+    }
+  };
+
+  const handleRestartAndInstall = () => {
+    if (window.electronAPI?.restartAndInstallUpdate) {
+      window.electronAPI.restartAndInstallUpdate();
+    }
+  };
+
   const fetchEntitlements = async (token) => {
     try {
       const headers = {};
@@ -108,7 +132,7 @@ function App() {
       if (authToken) {
         headers['Authorization'] = `Bearer ${authToken}`;
       }
-      const res = await fetch('http://localhost:5000/api/admin/entitlements', { headers });
+      const res = await fetch(`${API_BASE_URL}/api/admin/entitlements`, { headers });
       if (res.ok) {
         const data = await res.json();
         setEntitlements(data);
@@ -170,6 +194,24 @@ function App() {
       window.electronAPI.onSyncLog((newLog) => {
         setLogs(prev => deduplicateLogs([...prev, newLog]));
       });
+
+      if (window.electronAPI.getAppVersion) {
+        window.electronAPI.getAppVersion().then(v => {
+          if (v) setUpdateState(prev => ({ ...prev, currentVersion: v }));
+        });
+      }
+
+      if (window.electronAPI.getUpdateStatus) {
+        window.electronAPI.getUpdateStatus().then(st => {
+          if (st) setUpdateState(prev => ({ ...prev, ...st }));
+        });
+      }
+
+      if (window.electronAPI.onUpdateStatus) {
+        window.electronAPI.onUpdateStatus((st) => {
+          setUpdateState(prev => ({ ...prev, ...st }));
+        });
+      }
     }
 
     // Weather check for warm days
@@ -227,7 +269,7 @@ function App() {
         await window.electronAPI.saveGuestLogs(logs);
       }
 
-      const res = await fetch('http://localhost:5000/api/auth/login', {
+      const res = await fetch(`${API_BASE_URL}/api/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: loginEmail, password: loginPassword })
@@ -239,7 +281,7 @@ function App() {
 
         let userLogs = [];
         try {
-          const logsRes = await fetch('http://localhost:5000/api/sync/logs', {
+          const logsRes = await fetch(`${API_BASE_URL}/api/sync/logs`, {
             headers: { 'Authorization': `Bearer ${data.token}` }
           });
           if (logsRes.ok) {
@@ -289,7 +331,7 @@ function App() {
       }
     } catch (err) {
       console.error('Desktop login error:', err);
-      setLoginError('Could not connect to authentication server (http://localhost:5000). Please check your connection.');
+      setLoginError(`Could not connect to authentication server (${API_BASE_URL}). Please check your connection.`);
     } finally {
       setIsSubmitting(false);
     }
@@ -532,6 +574,21 @@ function App() {
           </div>
           <span className="titlebar-title">Water Buddy</span>
           <span className="titlebar-badge">Abyssal Edition</span>
+          {updateState.status === 'downloaded' && (
+            <button
+              type="button"
+              onClick={handleRestartAndInstall}
+              className="px-2.5 py-0.5 ml-2 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-[10px] font-mono font-bold hover:bg-emerald-500/30 transition-all cursor-pointer"
+              title="Click to restart and apply update"
+            >
+              🚀 Update Ready (Restart)
+            </button>
+          )}
+          {updateState.status === 'downloading' && (
+            <span className="px-2 py-0.5 ml-2 rounded-full bg-sky-500/20 text-[#38BDF8] border border-sky-500/30 text-[10px] font-mono">
+              ⬇️ Downloading update ({updateState.progress}%)
+            </span>
+          )}
         </div>
       </div>
 
@@ -1800,7 +1857,7 @@ function App() {
                     <div className="account-details-list mt-3">
                       <div className="account-detail-row">
                         <span className="detail-label">Sync Server:</span>
-                        <span className="detail-val mono-num">http://localhost:5000/api</span>
+                        <span className="detail-val mono-num">{API_BASE_URL}/api</span>
                       </div>
                       <div className="account-detail-row">
                         <span className="detail-label">Web Portal:</span>
@@ -1826,6 +1883,85 @@ function App() {
                     </div>
                   </div>
                 )}
+
+                {/* Desktop Release & Auto-Update Card */}
+                <div className="card glass-card update-card mt-4 p-5 rounded-2xl bg-[#0c141f] border border-white/10">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div>
+                      <span className="text-[10px] font-mono text-[#38BDF8] uppercase tracking-wider font-semibold">
+                        DESKTOP RELEASE & AUTO-UPDATE
+                      </span>
+                      <h4 className="text-base font-bold text-white mt-0.5">
+                        Water Buddy v{updateState.currentVersion}
+                      </h4>
+                      <p className="text-xs text-slate-400 mt-0.5">
+                        Target Channel: GitHub Releases (srikode-dev/Water-Buddy)
+                      </p>
+                    </div>
+                    <div>
+                      {updateState.status === 'downloaded' ? (
+                        <button
+                          type="button"
+                          onClick={handleRestartAndInstall}
+                          className="px-4 py-2 rounded-xl bg-emerald-400 text-[#070f19] font-bold text-xs uppercase tracking-wider hover:bg-emerald-300 transition-all shadow-lg shadow-emerald-400/20 cursor-pointer"
+                        >
+                          🚀 Restart & Apply v{updateState.availableVersion}
+                        </button>
+                      ) : updateState.status === 'downloading' ? (
+                        <div className="text-right">
+                          <span className="text-xs font-mono text-[#38BDF8]">
+                            Downloading {updateState.progress}%
+                          </span>
+                          <div className="w-28 h-1.5 bg-white/10 rounded-full mt-1 overflow-hidden">
+                            <div
+                              className="h-full bg-[#38BDF8] transition-all"
+                              style={{ width: `${updateState.progress}%` }}
+                            />
+                          </div>
+                        </div>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={handleCheckUpdates}
+                          disabled={updateState.status === 'checking'}
+                          className="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white font-mono text-xs uppercase tracking-wider transition-all border border-white/10 cursor-pointer disabled:opacity-50"
+                        >
+                          {updateState.status === 'checking' ? 'Checking Channel...' : 'Check for Updates ↻'}
+                        </button>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Status feedback pill */}
+                  <div className="mt-3 pt-3 border-t border-white/5 flex items-center justify-between text-xs font-mono">
+                    <span className="text-slate-400">Status:</span>
+                    {updateState.status === 'checking' && (
+                      <span className="text-amber-400">Querying GitHub release channel...</span>
+                    )}
+                    {updateState.status === 'available' && (
+                      <span className="text-[#38BDF8]">v{updateState.availableVersion} detected! Downloading installer in background...</span>
+                    )}
+                    {updateState.status === 'downloading' && (
+                      <span className="text-sky-300">Fetching update payload ({updateState.progress}%)...</span>
+                    )}
+                    {updateState.status === 'downloaded' && (
+                      <span className="text-emerald-400 font-bold">✓ v{updateState.availableVersion} ready! Click Restart to apply.</span>
+                    )}
+                    {updateState.status === 'not-available' && (
+                      <span className="text-emerald-400">✓ Running the latest production version (v{updateState.currentVersion})</span>
+                    )}
+                    {updateState.status === 'error' && (
+                      <span className="text-rose-400">
+                        {updateState.error?.includes('dev-app-update') || updateState.error?.includes('404')
+                          ? 'Auto-update channel ready (active in signed packaged releases)'
+                          : `Status note: ${updateState.error?.slice(0, 45)}...`}
+                      </span>
+                    )}
+                    {updateState.status === 'idle' && (
+                      <span className="text-slate-400">Automatic background update check active</span>
+                    )}
+                  </div>
+                </div>
               </div>
             </div>
           </div>

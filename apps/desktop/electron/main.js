@@ -5,6 +5,7 @@ import { startScheduler } from './scheduler.js';
 import { createTray } from './tray.js';
 import { store } from './store.js';
 import { startSyncService, syncData } from './sync.js';
+import { initAutoUpdater } from './updater.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const isDev = process.env.NODE_ENV === 'development';
@@ -134,6 +135,8 @@ app.whenReady().then(() => {
   startScheduler(() => triggerNotification());
 
   startSyncService();
+
+  initAutoUpdater([settingsWindow, overlayWindow]);
 
   ipcMain.on('trigger-test-reminder', () => {
     triggerNotification();

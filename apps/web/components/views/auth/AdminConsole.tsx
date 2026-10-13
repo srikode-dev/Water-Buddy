@@ -31,6 +31,7 @@ import {
   Filter,
   Info
 } from 'lucide-react';
+import { API_BASE_URL } from '@/utils/api';
 
 const DEFAULT_ADMIN_FEATURES: FeatureItem[] = [
   {
@@ -216,9 +217,9 @@ export function AdminConsole({ user, activeSection, onToast, onNavigateTab }: Ad
     setLoading(true);
     try {
       const [sRes, uRes, inqRes] = await Promise.all([
-        fetch('http://localhost:5000/api/admin/stats'),
-        fetch('http://localhost:5000/api/admin/users'),
-        fetch('http://localhost:5000/api/admin/inquiries')
+        fetch(`${API_BASE_URL}/api/admin/stats`),
+        fetch(`${API_BASE_URL}/api/admin/users`),
+        fetch(`${API_BASE_URL}/api/admin/inquiries`)
       ]);
 
       if (sRes.ok) {
@@ -242,7 +243,7 @@ export function AdminConsole({ user, activeSection, onToast, onNavigateTab }: Ad
 
   const fetchPricingConfig = async () => {
     try {
-      const res = await fetch('http://localhost:5000/api/admin/pricing');
+      const res = await fetch(`${API_BASE_URL}/api/admin/pricing`);
       if (res.ok) {
         const data = await res.json();
         if (data.pricing) {
@@ -265,7 +266,7 @@ export function AdminConsole({ user, activeSection, onToast, onNavigateTab }: Ad
   const handleSavePricing = async () => {
     setSavingPricing(true);
     try {
-      const res = await fetch('http://localhost:5000/api/admin/pricing', {
+      const res = await fetch(`${API_BASE_URL}/api/admin/pricing`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(pricingConfig)
@@ -314,7 +315,7 @@ export function AdminConsole({ user, activeSection, onToast, onNavigateTab }: Ad
   const handleResetDefaultFeatures = async () => {
     if (!window.confirm('Reset all feature entitlements to factory defaults?')) return;
     try {
-      const res = await fetch('http://localhost:5000/api/admin/pricing/reset-defaults', { method: 'POST' });
+      const res = await fetch(`${API_BASE_URL}/api/admin/pricing/reset-defaults`, { method: 'POST' });
       if (res.ok) {
         const data = await res.json();
         if (data.pricing) setPricingConfig(data.pricing);

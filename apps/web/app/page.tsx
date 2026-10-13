@@ -22,6 +22,7 @@ import {
 } from "@/components/features/modals";
 import { Toast, WaterDropletLoader } from "@/components/ui";
 import { SmoothScroll } from "@/components/providers/SmoothScroll";
+import { API_BASE_URL } from "@/utils/api";
 import gsap from "gsap";
 
 export default function Home() {
@@ -99,7 +100,7 @@ export default function Home() {
 
     const verifyAuth = async () => {
       try {
-        const res = await fetch("http://localhost:5000/api/auth/me", {
+        const res = await fetch(`${API_BASE_URL}/api/auth/me`, {
           headers: { Authorization: `Bearer ${token}` },
           signal: controller.signal,
         });

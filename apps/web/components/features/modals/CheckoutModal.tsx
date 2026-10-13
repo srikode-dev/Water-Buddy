@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { playIcelandicChime } from '@/utils/audio';
 import { X, Check, ShieldCheck, QrCode, CreditCard, Landmark, Copy } from 'lucide-react';
+import { API_BASE_URL } from '@/utils/api';
 
 export interface CheckoutModalProps {
   isOpen: boolean;
@@ -18,7 +19,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose, o
   const [currencySymbol, setCurrencySymbol] = useState('₹');
 
   React.useEffect(() => {
-    fetch('http://localhost:5000/api/admin/pricing')
+    fetch(`${API_BASE_URL}/api/admin/pricing`)
       .then((r) => r.json())
       .then((d) => {
         if (d.pricing?.price) {

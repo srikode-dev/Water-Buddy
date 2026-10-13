@@ -28,5 +28,13 @@ contextBridge.exposeInMainWorld('electronAPI', {
   minimizeWindow: () => ipcRenderer.send('window-minimize'),
   maximizeWindow: () => ipcRenderer.send('window-maximize'),
   closeWindow: () => ipcRenderer.send('window-close'),
-  isWindowMaximized: () => ipcRenderer.invoke('window-is-maximized')
+  isWindowMaximized: () => ipcRenderer.invoke('window-is-maximized'),
+  checkForUpdates: () => ipcRenderer.invoke('check-for-updates'),
+  getUpdateStatus: () => ipcRenderer.invoke('get-update-status'),
+  getAppVersion: () => ipcRenderer.invoke('get-app-version'),
+  restartAndInstallUpdate: () => ipcRenderer.send('restart-and-install-update'),
+  onUpdateStatus: (callback) => {
+    ipcRenderer.removeAllListeners('update-status');
+    ipcRenderer.on('update-status', (event, status) => callback(status));
+  }
 });

@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { WebUser } from '@/types';
 import { Droplet, Sparkles, Check, ArrowRight, ArrowLeft, Sliders, Bell } from 'lucide-react';
 import { playIcelandicChime, playBasaltDrop } from '@/utils/audio';
+import { API_BASE_URL } from '@/utils/api';
 
 interface WebOnboardingViewProps {
   user: WebUser;
@@ -70,7 +71,7 @@ export function WebOnboardingView({ user, onFinish, onToast }: WebOnboardingView
     try {
       const token = localStorage.getItem('wb_auth_token');
       if (token) {
-        await fetch('http://localhost:5000/api/auth/profile', {
+        await fetch(`${API_BASE_URL}/api/auth/profile`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',

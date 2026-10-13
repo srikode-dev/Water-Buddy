@@ -18,6 +18,7 @@ import {
   Activity
 } from 'lucide-react';
 import { playIcelandicChime, playBasaltDrop } from '@/utils/audio';
+import { API_BASE_URL } from '@/utils/api';
 
 interface UserConsoleProps {
   user: WebUser;
@@ -56,7 +57,7 @@ export function UserConsole({ user, activeSection, onToast, onNavigateTab }: Use
       const token = localStorage.getItem('wb_auth_token');
       if (!token) return;
       try {
-        const res = await fetch('http://localhost:5000/api/sync/logs', {
+        const res = await fetch(`${API_BASE_URL}/api/sync/logs`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         if (res.ok) {
@@ -99,7 +100,7 @@ export function UserConsole({ user, activeSection, onToast, onNavigateTab }: Use
     const token = localStorage.getItem('wb_auth_token');
     if (token) {
       try {
-        await fetch('http://localhost:5000/api/sync', {
+        await fetch(`${API_BASE_URL}/api/sync`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -162,7 +163,7 @@ export function UserConsole({ user, activeSection, onToast, onNavigateTab }: Use
     }
 
     try {
-      await fetch('http://localhost:5000/api/auth/profile', {
+      await fetch(`${API_BASE_URL}/api/auth/profile`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

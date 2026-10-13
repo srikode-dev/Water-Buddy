@@ -1,6 +1,13 @@
 import { store } from './store.js';
 
-const API_URL = process.env.API_URL || 'http://localhost:5000/api';
+function getApiUrl() {
+  const custom = store.get('apiUrl');
+  if (custom) {
+    const clean = custom.replace(/\/$/, '');
+    return clean.endsWith('/api') ? clean : `${clean}/api`;
+  }
+  return process.env.API_URL || process.env.VITE_API_URL || 'http://localhost:5000/api';
+}
 
 export async function syncData(options = {}) {
   const token = store.get('authToken');
@@ -20,7 +27,7 @@ export async function syncData(options = {}) {
   }
 
   try {
-    const response = await fetch(`${API_URL}/sync`, {
+    const response = await fetch(`${getApiUrl()}/sync`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

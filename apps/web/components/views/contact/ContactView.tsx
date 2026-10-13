@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { playIcelandicChime } from '@/utils/audio';
 import { Send, Mail, MessageSquare, CheckCircle2, HelpCircle, Bug, Sparkles } from 'lucide-react';
+import { API_BASE_URL } from '@/utils/api';
 
 export interface ContactViewProps {
   onToast: (msg: string) => void;
@@ -22,7 +23,7 @@ export function ContactView({ onToast }: ContactViewProps) {
 
     try {
       const categoryLabel = type === 'feedback' ? 'Suggestion' : type === 'bug' ? 'Bug Report' : 'General Help';
-      const res = await fetch('http://localhost:5000/api/admin/inquiry', {
+      const res = await fetch(`${API_BASE_URL}/api/admin/inquiry`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
