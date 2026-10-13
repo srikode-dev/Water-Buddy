@@ -1,5 +1,6 @@
 import { app, BrowserWindow, ipcMain, screen, Notification, shell, Menu } from 'electron';
 import path from 'path';
+import fs from 'fs';
 import { fileURLToPath } from 'url';
 import { startScheduler } from './scheduler.js';
 import { createTray } from './tray.js';
@@ -79,7 +80,9 @@ function createWindows() {
   });
   overlayWindow.setAlwaysOnTop(true, 'floating');
 
-  const iconPath = path.join(__dirname, 'icon.png');
+  const iconPath = fs.existsSync(path.join(__dirname, 'icon.ico'))
+    ? path.join(__dirname, 'icon.ico')
+    : path.join(__dirname, 'icon.png');
 
   settingsWindow = new BrowserWindow({
     width: 980,

@@ -9,20 +9,27 @@ let tray = null;
 
 function getTrayIcon() {
   const candidates = [
+    path.join(__dirname, 'icon.ico'),
     path.join(__dirname, 'icon.png'),
-    path.join(__dirname, '../public/icon.png'),
-    path.join(__dirname, '../dist/icon.png'),
+    path.join(app.getAppPath(), 'electron/icon.ico'),
     path.join(app.getAppPath(), 'electron/icon.png'),
+    path.join(__dirname, '../public/icon.ico'),
+    path.join(__dirname, '../public/icon.png'),
+    path.join(app.getAppPath(), 'public/icon.ico'),
     path.join(app.getAppPath(), 'public/icon.png'),
-    path.join(app.getAppPath(), 'dist/icon.png')
+    path.join(__dirname, '../dist/icon.ico'),
+    path.join(__dirname, '../dist/icon.png')
   ];
 
   for (const candidate of candidates) {
     try {
       if (fs.existsSync(candidate)) {
+        if (candidate.endsWith('.ico')) {
+          return candidate;
+        }
         const img = nativeImage.createFromPath(candidate);
         if (!img.isEmpty()) {
-          return img;
+          return img.resize({ width: 24, height: 24, quality: 'best' });
         }
       }
     } catch (e) {}
@@ -32,7 +39,7 @@ function getTrayIcon() {
 
 export function createTray(triggerNowCallback, openSettingsCallback, quitCallback) {
   const icon = getTrayIcon();
-  tray = new Tray(icon.resize({ width: 24, height: 24 }));
+  tray = new Tray(icon);
   
   const contextMenu = Menu.buildFromTemplate([
     { label: '💧 Water Buddy', enabled: false },
