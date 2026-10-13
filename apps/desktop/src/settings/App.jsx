@@ -500,12 +500,12 @@ function App() {
         }
         setSyncNotice(`✓ Cloud sync complete (${res.syncedCount || 0} entries updated)`);
       } else {
-        if (res?.reason === 'unauthenticated') {
-          setSyncNotice('⚠️ Offline mode: Sign in to sync with cloud.');
+        if (res?.reason === 'unauthenticated' || res?.status === 401 || res?.status === 403) {
+          setSyncNotice('⚠️ Session expired: Click "Sign Out / Switch" below, then sign back in.');
         } else if (res?.code === 'FEATURE_LOCKED' || res?.error?.includes('restricted')) {
           setSyncNotice('🔒 Cloud Sync is restricted on the Free plan by the owner.');
         } else {
-          setSyncNotice('⚠️ Sync failed: Backend unreachable.');
+          setSyncNotice(`⚠️ Sync failed: ${res?.error || 'Backend unreachable'}`);
         }
       }
     } catch (err) {

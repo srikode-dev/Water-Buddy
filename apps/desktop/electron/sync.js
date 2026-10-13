@@ -79,12 +79,22 @@ export async function syncData(options = {}) {
         syncedCount: data.syncedLogsCount || 0
       };
     } else {
-      console.error('Sync failed:', response.statusText);
-      return { success: false, error: response.statusText };
+      let errMsg = response.statusText;
+      try {
+        const errJson = await response.json();
+        if (errJson?.error) errMsg = errJson.error;
+      } catch (e) {}
+      console.error('Sync failed:', response.status, errMsg);
+      return {
+        success: false,
+        status: response.status,
+        reason: (response.status === 401 || response.status === 403) ? 'unauthenticated' : 'error',
+        error: errMsg
+      };
     }
   } catch (err) {
     console.error('Sync network error:', err);
-    return { success: false, error: err.message };
+    return { success: false, status: 0, reason: 'network', error: err.message };
   }
 }
 
