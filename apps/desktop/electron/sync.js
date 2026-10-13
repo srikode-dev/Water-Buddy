@@ -6,7 +6,7 @@ function getApiUrl() {
     const clean = custom.replace(/\/$/, '');
     return clean.endsWith('/api') ? clean : `${clean}/api`;
   }
-  return process.env.API_URL || process.env.VITE_API_URL || 'https://water-buddy-r8ur.onrender.com/api';
+  return process.env.API_URL || process.env.VITE_API_URL || 'https://water-buddy-qq34.vercel.app/api';
 }
 
 export async function syncData(options = {}) {

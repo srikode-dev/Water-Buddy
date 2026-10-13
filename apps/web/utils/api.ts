@@ -4,7 +4,7 @@
  */
 
 export const API_BASE_URL = 
-  process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, '') || 'https://water-buddy-r8ur.onrender.com';
+  process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, '') || 'https://water-buddy-qq34.vercel.app';
 
 export const GITHUB_REPO = 'srikode-dev/Water-Buddy';
 
