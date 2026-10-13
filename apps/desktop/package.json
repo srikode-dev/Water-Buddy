@@ -41,7 +41,8 @@
       {
         "provider": "github",
         "owner": "srikode-dev",
-        "repo": "Water-Buddy"
+        "repo": "Water-Buddy",
+        "releaseType": "release"
       }
     ]
   },
