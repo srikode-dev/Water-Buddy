@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import { playChimeByName, playBasaltDrop, playIcelandicChime, playOceanRipple, playSingingBowl } from '../utils/audio.js';
-import { API_BASE_URL } from '../utils/api.js';
+import { API_BASE_URL, WEB_PORTAL_URL } from '../utils/api.js';
 import './index.css';
 
 // Deduplicate helper: cleans identical logs created in the same time window or with matching ID
@@ -122,7 +122,47 @@ function App() {
   const handleRestartAndInstall = () => {
     if (window.electronAPI?.restartAndInstallUpdate) {
       window.electronAPI.restartAndInstallUpdate();
+    } else {
+      setSyncNotice('🚀 Update applied! In packaged build, this restarts Water Buddy.');
+      setTimeout(() => setSyncNotice(''), 4000);
     }
+  };
+
+  const handleSimulateUpdate = () => {
+    setUpdateState(prev => ({
+      ...prev,
+      status: 'checking',
+      error: null
+    }));
+    playIcelandicChime();
+    setTimeout(() => {
+      setUpdateState(prev => ({
+        ...prev,
+        status: 'available',
+        availableVersion: '1.0.1',
+        releaseNotes: 'Telemetry synchronization fix, new chimes, and speed optimizations.'
+      }));
+      let prog = 15;
+      const interval = setInterval(() => {
+        prog += 25;
+        if (prog >= 100) {
+          clearInterval(interval);
+          setUpdateState(prev => ({
+            ...prev,
+            status: 'downloaded',
+            availableVersion: '1.0.1',
+            progress: 100
+          }));
+          playIcelandicChime();
+        } else {
+          setUpdateState(prev => ({
+            ...prev,
+            status: 'downloading',
+            progress: prog
+          }));
+        }
+      }, 400);
+    }, 1000);
   };
 
   const fetchEntitlements = async (token) => {
@@ -523,17 +563,17 @@ function App() {
 
   const openWebPortal = () => {
     if (window.electronAPI && window.electronAPI.openExternal) {
-      window.electronAPI.openExternal('http://localhost:3000');
+      window.electronAPI.openExternal(WEB_PORTAL_URL);
     } else {
-      window.open('http://localhost:3000', '_blank');
+      window.open(WEB_PORTAL_URL, '_blank');
     }
   };
 
   const openWebPricing = () => {
     if (window.electronAPI && window.electronAPI.openExternal) {
-      window.electronAPI.openExternal('http://localhost:3000');
+      window.electronAPI.openExternal(WEB_PORTAL_URL);
     } else {
-      window.open('http://localhost:3000', '_blank');
+      window.open(WEB_PORTAL_URL, '_blank');
     }
   };
 
@@ -1861,7 +1901,7 @@ function App() {
                       </div>
                       <div className="account-detail-row">
                         <span className="detail-label">Web Portal:</span>
-                        <span className="detail-val">Active at localhost:3000</span>
+                        <span className="detail-val">{WEB_PORTAL_URL.replace('https://', '')}</span>
                       </div>
                     </div>
 
@@ -1920,14 +1960,25 @@ function App() {
                           </div>
                         </div>
                       ) : (
-                        <button
-                          type="button"
-                          onClick={handleCheckUpdates}
-                          disabled={updateState.status === 'checking'}
-                          className="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white font-mono text-xs uppercase tracking-wider transition-all border border-white/10 cursor-pointer disabled:opacity-50"
-                        >
-                          {updateState.status === 'checking' ? 'Checking Channel...' : 'Check for Updates ↻'}
-                        </button>
+                        <div className="flex items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={handleSimulateUpdate}
+                            disabled={updateState.status === 'checking'}
+                            className="px-3 py-2 rounded-xl bg-[#38BDF8]/10 hover:bg-[#38BDF8]/20 text-[#38BDF8] font-mono text-[11px] uppercase tracking-wider transition-all border border-[#38BDF8]/20 cursor-pointer disabled:opacity-50"
+                            title="Simulate the download & ready state to test the auto-update user experience"
+                          >
+                            🧪 Test Update Flow
+                          </button>
+                          <button
+                            type="button"
+                            onClick={handleCheckUpdates}
+                            disabled={updateState.status === 'checking'}
+                            className="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white font-mono text-xs uppercase tracking-wider transition-all border border-white/10 cursor-pointer disabled:opacity-50"
+                          >
+                            {updateState.status === 'checking' ? 'Checking Channel...' : 'Check for Updates ↻'}
+                          </button>
+                        </div>
                       )}
                     </div>
                   </div>
