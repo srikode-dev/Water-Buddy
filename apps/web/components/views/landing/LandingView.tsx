@@ -7,6 +7,7 @@ import { TextManifesto } from '@/components/features/TextManifesto';
 import { WalkInPreview } from '@/components/features/WalkInPreview';
 import { Download, Monitor, ShieldCheck, Zap, Heart, CheckCircle2, Sliders, ArrowDown, Sparkles } from 'lucide-react';
 import { playBasaltDrop } from '@/utils/audio';
+import { LATEST_DESKTOP_VERSION, LATEST_RELEASE_DATE } from '@/utils/api';
 
 export interface LandingViewProps {
   currentIntake: number;
@@ -114,7 +115,7 @@ export function LandingView({
                 className="inline-flex items-center gap-2.5 px-7 py-3.5 rounded-full bg-white text-[#070F19] text-sm font-semibold tracking-wide hover:bg-slate-200 active:scale-95 transition-all shadow-xl hover:scale-105 cursor-pointer"
               >
                 <Download className="w-4 h-4" />
-                <span>Download for Windows (.exe)</span>
+                <span>Download for Windows ({LATEST_DESKTOP_VERSION})</span>
               </button>
 
               <button
@@ -126,8 +127,20 @@ export function LandingView({
               </button>
             </div>
 
+            {/* Version & Update Date Telemetry */}
+            <div className="flex flex-wrap items-center gap-3 text-xs font-mono text-slate-400 pt-1">
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-[#34D399] font-medium">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#34D399] animate-pulse" />
+                <span>{LATEST_DESKTOP_VERSION} Stable</span>
+              </span>
+              <span className="text-slate-600">•</span>
+              <span>Updated {LATEST_RELEASE_DATE}</span>
+              <span className="text-slate-600">•</span>
+              <span>Windows 11 / 10 (64-bit)</span>
+            </div>
+
             {/* Trust bullet points */}
-            <div className="flex flex-wrap items-center gap-6 text-xs text-slate-400 pt-3">
+            <div className="flex flex-wrap items-center gap-6 text-xs text-slate-400 pt-2">
               <div className="flex items-center gap-1.5">
                 <CheckCircle2 className="w-4 h-4 text-[#34D399]" />
                 <span>Never steals typing focus</span>
@@ -498,16 +511,18 @@ export function LandingView({
               className="inline-flex items-center gap-3 px-8 py-4 rounded-full bg-white text-[#070F19] hover:bg-slate-200 text-sm font-semibold tracking-wide transition-all shadow-xl hover:scale-105 active:scale-95 cursor-pointer"
             >
               <Download className="w-4 h-4" />
-              <span>Download for Windows (.exe)</span>
+              <span>Download {LATEST_DESKTOP_VERSION} for Windows (.exe)</span>
             </button>
           </div>
 
-          <div className="flex items-center gap-4 text-xs font-mono text-slate-400 pt-1">
-            <span>Windows 10 / 11 (64-bit)</span>
+          <div className="flex flex-wrap items-center justify-center gap-3 text-xs font-mono text-slate-400 pt-1">
+            <span className="text-[#34D399] font-semibold">{LATEST_DESKTOP_VERSION} Production</span>
             <span className="text-slate-600">•</span>
-            <span>14.2 MB Installer</span>
+            <span>Last Updated: {LATEST_RELEASE_DATE}</span>
             <span className="text-slate-600">•</span>
-            <span>SHA-256 Verified</span>
+            <span>Windows 11 / 10 (64-bit)</span>
+            <span className="text-slate-600">•</span>
+            <span>112 MB Installer</span>
           </div>
         </div>
       </section>

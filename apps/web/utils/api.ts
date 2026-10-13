@@ -8,6 +8,9 @@ export const API_BASE_URL =
 
 export const GITHUB_REPO = 'srikode-dev/Water-Buddy';
 
+export const LATEST_DESKTOP_VERSION = 'v1.0.6';
+export const LATEST_RELEASE_DATE = 'October 14, 2026';
+
 export const DEFAULT_DOWNLOAD_EXE_URL = 
   process.env.NEXT_PUBLIC_DOWNLOAD_URL || 
   `https://github.com/${GITHUB_REPO}/releases/latest/download/WaterBuddy-Setup.exe`;

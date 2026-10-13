@@ -1925,91 +1925,108 @@ function App() {
                 )}
 
                 {/* Desktop Release & Auto-Update Card */}
-                <div className="card glass-card update-card mt-4 p-5 rounded-2xl bg-[#0c141f] border border-white/10">
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                    <div>
-                      <span className="text-[10px] font-mono text-[#38BDF8] uppercase tracking-wider font-semibold">
-                        DESKTOP RELEASE & AUTO-UPDATE
-                      </span>
-                      <h4 className="text-base font-bold text-white mt-0.5">
+                <div className="update-card">
+                  <div className="update-header-layout">
+                    <div className="update-info-block">
+                      <div className="update-badge-pill">
+                        <span className={`update-badge-dot ${updateState.status === 'downloaded' ? 'emerald pulse' : updateState.status === 'downloading' || updateState.status === 'checking' ? 'pulse' : ''}`} />
+                        <span>{updateState.status === 'downloaded' ? 'UPDATE READY TO APPLY' : 'DESKTOP RELEASE CHANNEL'}</span>
+                      </div>
+                      <h4 className="update-heading-title">
                         Water Buddy v{updateState.currentVersion}
                       </h4>
-                      <p className="text-xs text-slate-400 mt-0.5">
+                      <p className="update-channel-sub">
                         Target Channel: GitHub Releases (srikode-dev/Water-Buddy)
                       </p>
                     </div>
-                    <div>
+
+                    <div className="update-actions-group">
                       {updateState.status === 'downloaded' ? (
                         <button
                           type="button"
                           onClick={handleRestartAndInstall}
-                          className="px-4 py-2 rounded-xl bg-emerald-400 text-[#070f19] font-bold text-xs uppercase tracking-wider hover:bg-emerald-300 transition-all shadow-lg shadow-emerald-400/20 cursor-pointer"
+                          className="btn-update-apply"
                         >
-                          🚀 Restart & Apply v{updateState.availableVersion}
+                          <span>🚀 Restart & Apply v{updateState.availableVersion}</span>
                         </button>
                       ) : updateState.status === 'downloading' ? (
-                        <div className="text-right">
-                          <span className="text-xs font-mono text-[#38BDF8]">
-                            Downloading {updateState.progress}%
-                          </span>
-                          <div className="w-28 h-1.5 bg-white/10 rounded-full mt-1 overflow-hidden">
+                        <div className="update-progress-container">
+                          <div className="update-progress-meta">
+                            <span>Downloading payload</span>
+                            <span>{updateState.progress}%</span>
+                          </div>
+                          <div className="update-progress-track">
                             <div
-                              className="h-full bg-[#38BDF8] transition-all"
+                              className="update-progress-fill"
                               style={{ width: `${updateState.progress}%` }}
                             />
                           </div>
                         </div>
                       ) : (
-                        <div className="flex items-center gap-2">
+                        <>
                           <button
                             type="button"
                             onClick={handleSimulateUpdate}
                             disabled={updateState.status === 'checking'}
-                            className="px-3 py-2 rounded-xl bg-[#38BDF8]/10 hover:bg-[#38BDF8]/20 text-[#38BDF8] font-mono text-[11px] uppercase tracking-wider transition-all border border-[#38BDF8]/20 cursor-pointer disabled:opacity-50"
+                            className="btn-update-test"
                             title="Simulate the download & ready state to test the auto-update user experience"
                           >
-                            🧪 Test Update Flow
+                            <span>🧪 Test Update Flow</span>
                           </button>
                           <button
                             type="button"
                             onClick={handleCheckUpdates}
                             disabled={updateState.status === 'checking'}
-                            className="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white font-mono text-xs uppercase tracking-wider transition-all border border-white/10 cursor-pointer disabled:opacity-50"
+                            className="btn-update-check"
                           >
-                            {updateState.status === 'checking' ? 'Checking Channel...' : 'Check for Updates ↻'}
+                            <span>{updateState.status === 'checking' ? 'Checking Channel...' : 'Check for Updates ↻'}</span>
                           </button>
-                        </div>
+                        </>
                       )}
                     </div>
                   </div>
 
-                  {/* Status feedback pill */}
-                  <div className="mt-3 pt-3 border-t border-white/5 flex items-center justify-between text-xs font-mono">
-                    <span className="text-slate-400">Status:</span>
+                  {/* Status feedback row */}
+                  <div className="update-status-divider">
+                    <span className="update-status-label">Status telemetry:</span>
                     {updateState.status === 'checking' && (
-                      <span className="text-amber-400">Querying GitHub release channel...</span>
+                      <span className="update-status-pill checking">
+                        <span>⏳ Querying GitHub release channel for latest.yml...</span>
+                      </span>
                     )}
                     {updateState.status === 'available' && (
-                      <span className="text-[#38BDF8]">v{updateState.availableVersion} detected! Downloading installer in background...</span>
+                      <span className="update-status-pill info">
+                        <span>⚡ v{updateState.availableVersion} detected! Background downloader running...</span>
+                      </span>
                     )}
                     {updateState.status === 'downloading' && (
-                      <span className="text-sky-300">Fetching update payload ({updateState.progress}%)...</span>
+                      <span className="update-status-pill info">
+                        <span>📥 Fetching update binary ({updateState.progress}% complete)...</span>
+                      </span>
                     )}
                     {updateState.status === 'downloaded' && (
-                      <span className="text-emerald-400 font-bold">✓ v{updateState.availableVersion} ready! Click Restart to apply.</span>
+                      <span className="update-status-pill success font-bold">
+                        <span>✓ v{updateState.availableVersion} ready! Click Restart to apply.</span>
+                      </span>
                     )}
                     {updateState.status === 'not-available' && (
-                      <span className="text-emerald-400">✓ Running the latest production version (v{updateState.currentVersion})</span>
+                      <span className="update-status-pill success">
+                        <span>✓ Running the latest production version (v{updateState.currentVersion})</span>
+                      </span>
                     )}
                     {updateState.status === 'error' && (
-                      <span className="text-rose-400">
-                        {updateState.error?.includes('dev-app-update') || updateState.error?.includes('404')
-                          ? 'Auto-update channel ready (active in signed packaged releases)'
-                          : `Status note: ${updateState.error?.slice(0, 45)}...`}
+                      <span className="update-status-pill error">
+                        <span>
+                          {updateState.error?.includes('dev-app-update') || updateState.error?.includes('404')
+                            ? 'Auto-update channel ready (active in signed packaged releases)'
+                            : `Note: ${updateState.error?.slice(0, 45)}...`}
+                        </span>
                       </span>
                     )}
                     {updateState.status === 'idle' && (
-                      <span className="text-slate-400">Automatic background update check active</span>
+                      <span className="update-status-pill info">
+                        <span>🟢 Automatic background update check active</span>
+                      </span>
                     )}
                   </div>
                 </div>
