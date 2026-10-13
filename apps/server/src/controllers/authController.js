@@ -1,4 +1,4 @@
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { User, WidgetSettings } from '../models/index.js';
 import { getUserAllowedFeatures } from '../utils/entitlements.js';

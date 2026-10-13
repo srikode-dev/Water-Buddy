@@ -9,6 +9,19 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+app.get('/', (req, res) => {
+  res.json({
+    status: 'ok',
+    service: 'Water Buddy API Server',
+    endpoints: {
+      health: '/health',
+      auth: '/api/auth',
+      sync: '/api/sync',
+      admin: '/api/admin'
+    }
+  });
+});
+
 app.get('/health', (req, res) => {
   res.json({ status: 'ok', message: 'Water Buddy Server is running' });
 });
