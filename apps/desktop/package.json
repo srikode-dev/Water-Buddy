@@ -1,7 +1,7 @@
 {
   "name": "desktop",
   "private": true,
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "Water Buddy — Atmospheric Hydration & Desktop Health Companion",
   "author": "Srikant Sahu",
   "type": "module",
@@ -26,7 +26,6 @@
       "public/**/*"
     ],
     "win": {
-      "icon": "build/icon.ico",
       "target": [
         "nsis"
       ]
