@@ -79,7 +79,7 @@ function createWindows() {
   });
   overlayWindow.setAlwaysOnTop(true, 'floating');
 
-  const iconPath = path.join(__dirname, '../public/icon.png');
+  const iconPath = path.join(__dirname, 'icon.png');
 
   settingsWindow = new BrowserWindow({
     width: 980,

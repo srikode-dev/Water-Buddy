@@ -45,3 +45,16 @@ jobs:
         run: |
           cd apps/desktop
           npx electron-builder --win --publish always
+
+      - name: Ensure All Release Assets are Attached
+        if: success()
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            apps/desktop/release/WaterBuddy-Setup.exe
+            apps/desktop/release/latest.yml
+            apps/desktop/release/*.blockmap
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
