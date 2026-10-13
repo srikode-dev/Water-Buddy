@@ -27,6 +27,12 @@
         "nsis"
       ]
     },
+    "nsis": {
+      "oneClick": true,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "artifactName": "WaterBuddy-Setup.exe"
+    },
     "publish": [
       {
         "provider": "github",
